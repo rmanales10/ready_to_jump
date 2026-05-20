@@ -1,0 +1,239 @@
+.pageContainer {
+  width: 100vw;
+  height: 100vh;
+  background-color: #030712; /* Rich dark navy background */
+  color: #ffffff;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Abstract Organic Wave Shapes layered on background */
+.waveLeft {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 42%;
+  height: auto;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.waveRight {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 45%;
+  height: auto;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.contentWrapper {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  position: relative;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10%;
+}
+
+.leftColumn {
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.brandLogo {
+  align-self: flex-start;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 8px 16px rgba(37, 99, 235, 0.3));
+}
+
+.brandLogo img {
+  display: block;
+  max-width: 100%;
+  height: auto !important;
+}
+
+.heading {
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -1px;
+  background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subheading {
+  font-size: 16px;
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.rightColumn {
+  display: flex;
+  justify-content: center;
+  width: 460px;
+}
+
+/* Elegant glassmorphic card for form */
+.loginCard {
+  width: 100%;
+  background: rgba(11, 21, 48, 0.45);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  padding: 56px 48px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.cardTitle {
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.inputWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.inputField {
+  width: 100%;
+  background: rgba(3, 7, 18, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px 20px;
+  font-size: 15px;
+  color: #ffffff;
+  font-family: var(--font-sans);
+  transition: var(--transition-smooth);
+}
+
+.inputField::placeholder {
+  color: #4b5563;
+  opacity: 0.8;
+}
+
+.inputField:focus {
+  outline: none;
+  border-color: var(--brand-blue);
+  background: rgba(3, 7, 18, 0.8);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+.errorText {
+  color: #ef4444;
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 4px;
+  display: block;
+}
+
+.loginButton {
+  width: 100%;
+  background-color: #030712;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  font-family: var(--font-sans);
+  margin-top: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.loginButton:hover {
+  background-color: #0b1530;
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.1);
+}
+
+.loginButton:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 1024px) {
+  .contentWrapper {
+    flex-direction: column;
+    justify-content: center;
+    gap: 48px;
+    padding: 80px 24px 48px 24px;
+    overflow-y: auto;
+  }
+  .leftColumn {
+    align-items: center;
+    text-align: center;
+  }
+  .brandLogo {
+    align-self: center;
+  }
+  .brandLogo img {
+    width: 110px !important;
+  }
+  .waveLeft {
+    width: 65%;
+    height: auto;
+    bottom: 0;
+    left: 0;
+    opacity: 0.4;
+  }
+  .waveRight {
+    width: 70%;
+    height: auto;
+    top: 0;
+    right: 0;
+    opacity: 0.4;
+  }
+}
+
+@media (max-width: 480px) {
+  .rightColumn {
+    width: 100%;
+  }
+  .loginCard {
+    padding: 36px 24px;
+  }
+  .heading {
+    font-size: 36px;
+  }
+  .brandLogo img {
+    width: 90px !important;
+  }
+  .waveLeft {
+    width: 80%;
+    height: auto;
+    bottom: 0;
+    left: 0;
+    opacity: 0.35;
+  }
+  .waveRight {
+    width: 85%;
+    height: auto;
+    top: 0;
+    right: 0;
+    opacity: 0.35;
+  }
+}

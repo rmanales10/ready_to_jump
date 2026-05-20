@@ -1,0 +1,392 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100vw;
+  background-color: var(--bg-light);
+}
+
+.mainContent {
+  margin-left: 260px;
+  flex-grow: 1;
+  padding: 40px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+.adminProfile {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Tab filtering and controls bar */
+.topControls {
+  background-color: #ffffff;
+  border-radius: 16px;
+  border: 1px solid var(--border-light);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.02);
+}
+
+.tabGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tabTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-right: 8px;
+}
+
+.tabButton {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background-color: #f1f5f9;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  font-family: var(--font-sans);
+}
+
+.tabButton:hover {
+  background-color: #e2e8f0;
+  color: var(--text-primary);
+}
+
+.tabActive {
+  background-color: #0b1530 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(11, 21, 48, 0.15);
+}
+
+.rightControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.searchContainer {
+  position: relative;
+  width: 260px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 12px 8px 38px;
+  border: 1px solid var(--border-light);
+  background-color: #f8fafc;
+  border-radius: 20px;
+  font-size: 13px;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  transition: var(--transition-smooth);
+}
+
+.searchInput:focus {
+  outline: none;
+  background-color: #ffffff;
+  border-color: rgba(37, 99, 235, 0.3);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.filterSelect, .filterButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  background-color: #f8fafc;
+  border: 1px solid var(--border-light);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: var(--transition-fast);
+}
+
+.filterSelect:focus, .filterButton:focus {
+  outline: none;
+}
+
+.filterSelect:hover, .filterButton:hover {
+  background-color: #e2e8f0;
+  color: var(--text-primary);
+}
+
+/* Bug card item grids */
+.bugsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bugCard {
+  background-color: var(--bg-card);
+  border-radius: 16px;
+  border: 1px solid var(--border-light);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+  transition: var(--transition-smooth);
+}
+
+.bugCard:hover {
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.05);
+  border-color: #e2e8f0;
+  transform: translateY(-2px);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.bugTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+}
+
+.bugDate {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-light);
+}
+
+.bugDescription {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.reporterInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Elegant custom SVG avatar representation */
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Actual avatar image illustration inside avatar */
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.reporterName {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.reporterSeparator {
+  color: var(--border-light);
+  font-weight: 300;
+}
+
+.reporterDevice {
+  font-size: 12px;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+/* Modern status dropdown badge styled exactly like the design */
+.statusBadgeWrapper {
+  position: relative;
+}
+
+.statusDropdown {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border-light);
+  background-color: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: var(--transition-fast);
+}
+
+.statusDropdown:hover {
+  background-color: #f8fafc;
+  color: var(--text-primary);
+  border-color: #cbd5e1;
+}
+
+.statusInProcess {
+  color: var(--text-primary);
+  background-color: transparent;
+  border-color: var(--border-light);
+}
+
+.statusResolved {
+  color: var(--green-text);
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+/* Pagination container */
+.paginationBar {
+  padding: 24px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pageButton {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background-color: transparent;
+  border: 1px solid var(--border-light);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  font-family: var(--font-sans);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pageNumber {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background-color: transparent;
+  border: 1px solid var(--border-light);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  font-family: var(--font-sans);
+}
+
+.pageButton:hover, .pageNumber:hover {
+  background-color: #ffffff;
+  color: var(--text-primary);
+  border-color: #cbd5e1;
+}
+
+.pageActive {
+  background-color: #cbd5e1 !important;
+  color: var(--text-primary) !important;
+  border-color: #cbd5e1 !important;
+}
+
+.pageDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+@media (max-width: 1024px) {
+  .mainContent {
+    margin-left: 0 !important;
+    padding: 96px 24px 32px 24px !important; /* Top padding clears the fixed sidebar header */
+  }
+  .topControls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .rightControls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .searchContainer {
+    width: 100%;
+  }
+}
+
+@media (max-width: 580px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .tabGroup {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .cardFooter {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .statusBadgeWrapper {
+    width: 100%;
+  }
+  .statusDropdown {
+    width: 100%;
+    justify-content: center;
+  }
+}

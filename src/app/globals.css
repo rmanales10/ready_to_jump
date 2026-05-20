@@ -1,0 +1,102 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Common Design Tokens */
+  --font-sans: 'Outfit', sans-serif;
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: all 0.15s ease;
+  
+  /* Primary Brand colors */
+  --brand-blue: #2563eb;
+  --brand-blue-hover: #1d4ed8;
+  --brand-teal: #06b6d4;
+  --brand-gradient: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+  
+  /* Light Theme Colors (Default Dashboard/Bugs) */
+  --bg-light: #f5f7fa;
+  --bg-card: #ffffff;
+  --bg-sidebar: #ffffff;
+  --border-light: #eef2f6;
+  --text-primary: #1e293b;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  
+  /* Alert/Badge Colors */
+  --green-bg: rgba(34, 197, 94, 0.1);
+  --green-text: #16a34a;
+  --red-bg: rgba(239, 68, 68, 0.1);
+  --red-text: #dc2626;
+  --amber-bg: rgba(245, 158, 11, 0.1);
+  --amber-text: #d97706;
+  
+  /* Dark Navy Accent Colors (used in metrics, login) */
+  --dark-navy-deep: #030712;
+  --dark-navy-card: #0b1530;
+  --dark-navy-input: rgba(15, 23, 42, 0.6);
+  --dark-navy-border: rgba(255, 255, 255, 0.08);
+}
+
+/* Base resets */
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-sans);
+  background-color: var(--bg-light);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+body {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Elegant scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Standard animation keyframes for sweeping background blobs */
+@keyframes float-blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+/* Utility class to center content */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

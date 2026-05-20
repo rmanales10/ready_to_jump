@@ -1,0 +1,83 @@
+.card {
+  background-color: var(--dark-navy-card);
+  border-radius: 16px;
+  padding: 24px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(3, 7, 18, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: var(--transition-smooth);
+  flex: 1;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 30px rgba(3, 7, 18, 0.25);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-light);
+  letter-spacing: 0.2px;
+}
+
+.iconWrapper {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.value {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.trend {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.trendLabel {
+  color: var(--text-light);
+  margin-left: 4px;
+}
+
+.positive {
+  color: #10b981; /* bright emerald green */
+}
+
+.negative {
+  color: #ef4444; /* bright red */
+}
+
+/* Subtle background glow element for premium aesthetic */
+.glow {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  background: var(--brand-blue);
+  filter: blur(40px);
+  opacity: 0.15;
+  top: -20px;
+  right: -20px;
+  pointer-events: none;
+}

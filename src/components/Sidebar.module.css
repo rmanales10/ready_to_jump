@@ -1,0 +1,199 @@
+.sidebar {
+  width: 260px;
+  height: 100vh;
+  background-color: var(--bg-sidebar);
+  border-right: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  padding: 32px 24px;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 100;
+  transition: var(--transition-smooth);
+}
+
+.logoSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 48px;
+}
+
+.logoText {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+.navLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-grow: 1;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background-color: transparent;
+  transition: var(--transition-fast);
+  cursor: pointer;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+
+.navItem:hover {
+  background-color: var(--bg-light);
+  color: var(--text-primary);
+}
+
+.activeItem {
+  background-color: #0b1530 !important; /* Elegant dark navy from the design */
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(11, 21, 48, 0.15);
+}
+
+.navIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+}
+
+.activeItem .navIconWrapper {
+  opacity: 1;
+}
+
+.logoutSection {
+  margin-top: auto;
+}
+
+.logoutButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background-color: transparent;
+  border: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  width: 100%;
+}
+
+.logoutButton:hover {
+  background-color: #fef2f2;
+  color: var(--red-text);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 100vw !important;
+    height: 64px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 20px !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border-light) !important;
+    left: 0 !important;
+    top: 0 !important;
+  }
+
+  .logoSection {
+    margin-bottom: 0 !important;
+    gap: 8px !important;
+  }
+
+  .logoText {
+    font-size: 16px !important;
+  }
+
+  .navLinks {
+    flex-direction: row !important;
+    gap: 8px !important;
+    flex-grow: 0 !important;
+  }
+
+  .navItem {
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    border-radius: 8px !important;
+  }
+
+  .navIconWrapper {
+    margin-left: 6px !important;
+  }
+
+  .logoutSection {
+    margin-top: 0 !important;
+  }
+
+  .logoutButton {
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    border-radius: 8px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    padding: 0 12px !important;
+  }
+  
+  .logoText {
+    display: none !important;
+  }
+  
+  .navIconWrapper {
+    display: none !important;
+  }
+  
+  .navItem {
+    padding: 8px 10px !important;
+    font-size: 12px !important;
+  }
+  
+  .logoutButton {
+    padding: 8px 10px !important;
+    font-size: 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    justify-content: center !important;
+    gap: 8px !important;
+  }
+  
+  .logoSection {
+    display: none !important;
+  }
+  
+  .navLinks {
+    gap: 4px !important;
+  }
+  
+  .navItem {
+    padding: 6px 8px !important;
+    font-size: 11px !important;
+  }
+  
+  .logoutButton {
+    padding: 6px 8px !important;
+    font-size: 11px !important;
+  }
+}

@@ -1,0 +1,327 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100vw;
+  background-color: var(--bg-light);
+}
+
+.mainContent {
+  margin-left: 260px;
+  flex-grow: 1;
+  padding: 40px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+.adminProfile {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  width: 100%;
+}
+
+/* User management table widget card */
+.widgetCard {
+  background-color: var(--bg-card);
+  border-radius: 16px;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.03);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Sub-header controls */
+.controlsBar {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-light);
+  background-color: #e2e8f0; /* Crisp blue-gray bar from the screenshot */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.searchContainer {
+  position: relative;
+  width: 320px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 16px 10px 44px;
+  border: 1px solid transparent;
+  background-color: #ffffff;
+  border-radius: 20px;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  transition: var(--transition-smooth);
+}
+
+.searchInput::placeholder {
+  color: var(--text-light);
+}
+
+.searchInput:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  border-color: rgba(37, 99, 235, 0.3);
+}
+
+.filtersContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filterSelect, .filterButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background-color: #ffffff;
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: var(--transition-fast);
+}
+
+.filterSelect:focus, .filterButton:focus {
+  outline: none;
+}
+
+.filterSelect:hover, .filterButton:hover {
+  background-color: #f8fafc;
+  color: var(--text-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Beautiful custom Table layout */
+.tableContainer {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.th {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-light);
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.td {
+  padding: 16px 24px;
+  font-size: 14px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-light);
+  font-weight: 500;
+}
+
+.tr {
+  transition: var(--transition-fast);
+}
+
+.tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Custom checkbox */
+.checkboxLabel {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.checkbox {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  transition: var(--transition-fast);
+  background-color: #ffffff;
+}
+
+.checkbox:checked {
+  background-color: #0b1530;
+  border-color: #0b1530;
+}
+
+.checkbox:checked::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 4px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Dynamic status levels tags */
+.levelBadge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.badgeJunior {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.badgeIntermediate {
+  background-color: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fef3c7;
+}
+
+.badgeExpert {
+  background-color: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #dcfce7;
+}
+
+/* Pagination container */
+.paginationBar {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pageButton {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background-color: transparent;
+  border: 1px solid var(--border-light);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  font-family: var(--font-sans);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pageNumber {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background-color: transparent;
+  border: 1px solid var(--border-light);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  font-family: var(--font-sans);
+}
+
+.pageButton:hover, .pageNumber:hover {
+  background-color: var(--bg-light);
+  color: var(--text-primary);
+  border-color: #cbd5e1;
+}
+
+.pageActive {
+  background-color: #cbd5e1 !important;
+  color: var(--text-primary) !important;
+  border-color: #cbd5e1 !important;
+}
+
+.pageDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+@media (max-width: 1024px) {
+  .mainContent {
+    margin-left: 0 !important;
+    padding: 96px 24px 32px 24px !important; /* Top padding clears the fixed sidebar header */
+  }
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+  .controlsBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .searchContainer {
+    width: 100%;
+  }
+}
+
+@media (max-width: 580px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .filtersContainer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filterSelect, .filterButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
