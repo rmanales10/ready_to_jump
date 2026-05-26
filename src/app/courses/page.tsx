@@ -1,15 +1,18 @@
 'use client';
 
-import React, { useState, useMemo, KeyboardEvent, useRef } from 'react';
+import React, { useState, useMemo, KeyboardEvent, useRef, useEffect } from 'react';
 import styles from './courses.module.css';
 import Sidebar from '@/components/Sidebar';
 import { SearchIcon, CoursesIcon } from '@/components/SVGIcons';
-import { mockCourses, Course, InterviewerPersona } from '@/data/mockData';
+import { Course, InterviewerPersona } from '@/data/mockData';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
 
 export default function CoursesPage() {
-  const [courses, setCourses] = useState<Course[]>(mockCourses);
-  const [selectedCourseId, setSelectedCourseId] = useState<string | null>('course-1'); // Default to David's course
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [firestoreLoading, setFirestoreLoading] = useState(true);
 
   // Categories list state
   const [categories, setCategories] = useState<string[]>(['IT', 'Product', 'Business', 'Marketing']);
@@ -294,8 +297,8 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
     }
   };
 
-  // Handle Save / Submit of course form
-  const handleSaveCourse = () => {
+  // Handle Save / Submit of course form — writes to Firestore
+  const handleSaveCourse = async () => {
     if (formTargetRoles.length === 0) {
       showNotification('Target Roles cannot be empty. Please specify at least one target role.', 'error');
       return;
@@ -305,69 +308,74 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
       return;
     }
 
-    if (isEditing && selectedCourseId) {
-      // Modify existing course in list
-      setCourses(
-        courses.map((course) => {
-          if (course.id === selectedCourseId) {
-            return {
-              ...course,
-              category: formCategory,
-              targetRoles: formTargetRoles,
-              targetLevels: formTargetLevels,
-              interviewers: formInterviewers,
-              focusAreas: formFocusAreas,
-              targetOutcomes: formTargetOutcomes,
-              growthGoals: formGrowthGoals,
-              architectPrompt: formArchitectPrompt,
-              interviewerPrompt: formInterviewerPrompt,
-              evaluatorPrompt: formEvaluatorPrompt,
-              coachPrompt: formCoachPrompt,
-            };
-          }
-          return course;
-        })
-      );
-      showNotification('Course general settings, interviewer personas, and AI Prompt instructions updated successfully!');
-    } else {
-      // Create new course
-      const newCourseId = `course-${Date.now()}`;
-      const newCourse: Course = {
-        id: newCourseId,
-        category: formCategory,
-        targetRoles: formTargetRoles,
-        targetLevels: formTargetLevels,
-        interviewers: formInterviewers,
-        focusAreas: formFocusAreas,
-        targetOutcomes: formTargetOutcomes,
-        growthGoals: formGrowthGoals,
-        architectPrompt: formArchitectPrompt,
-        interviewerPrompt: formInterviewerPrompt,
-        evaluatorPrompt: formEvaluatorPrompt,
-        coachPrompt: formCoachPrompt,
-      };
+    const courseData = {
+      category: formCategory,
+      targetRoles: formTargetRoles,
+      targetLevels: formTargetLevels,
+      interviewers: formInterviewers.map((i) => ({
+        id: i.id,
+        name: i.name,
+        title: i.title,
+        style: i.style,
+        avatar: i.avatar,
+      })),
+      focusAreas: formFocusAreas,
+      targetOutcomes: formTargetOutcomes,
+      growthGoals: formGrowthGoals,
+      architectPrompt: formArchitectPrompt,
+      interviewerPrompt: formInterviewerPrompt,
+      evaluatorPrompt: formEvaluatorPrompt,
+      coachPrompt: formCoachPrompt,
+    };
 
-      setCourses([...courses, newCourse]);
-      setSelectedCourseId(newCourseId);
-      setIsEditing(true);
-      showNotification('New Course registered successfully with configured roles, personas, and prompts!');
+    try {
+      if (isEditing && selectedCourseId) {
+        // Update existing in Firestore
+        await setDoc(doc(db, 'courses', selectedCourseId), courseData);
+
+        setCourses(
+          courses.map((course) =>
+            course.id === selectedCourseId ? { ...course, ...courseData } : course
+          )
+        );
+        showNotification('Course saved to Firestore! Changes are now live on the mobile app.');
+      } else {
+        // Create new in Firestore
+        const newCourseId = `course-${Date.now()}`;
+        await setDoc(doc(db, 'courses', newCourseId), courseData);
+
+        const newCourse: Course = { id: newCourseId, ...courseData } as Course;
+        setCourses([...courses, newCourse]);
+        setSelectedCourseId(newCourseId);
+        setIsEditing(true);
+        showNotification('New course created in Firestore! Mobile app can now use these prompts.');
+      }
+    } catch (err) {
+      console.error('Firestore save error:', err);
+      showNotification('Failed to save to Firestore. Check console for details.', 'error');
     }
   };
 
-  // Handle deleting a course
-  const handleDeleteCourse = () => {
+  // Handle deleting a course — deletes from Firestore
+  const handleDeleteCourse = async () => {
     if (!selectedCourseId) return;
 
     if (confirm('Are you sure you want to delete this course and all its AI Prompts? This action cannot be undone.')) {
-      const remaining = courses.filter((c) => c.id !== selectedCourseId);
-      setCourses(remaining);
-      showNotification('Course deleted successfully.', 'info');
-      
-      // Auto select the first remaining course if it exists
-      if (remaining.length > 0) {
-        handleSelectCourse(remaining[0]);
-      } else {
-        setSelectedCourseId(null);
+      try {
+        await deleteDoc(doc(db, 'courses', selectedCourseId));
+
+        const remaining = courses.filter((c) => c.id !== selectedCourseId);
+        setCourses(remaining);
+        showNotification('Course deleted from Firestore.', 'info');
+        
+        if (remaining.length > 0) {
+          handleSelectCourse(remaining[0]);
+        } else {
+          setSelectedCourseId(null);
+        }
+      } catch (err) {
+        console.error('Firestore delete error:', err);
+        showNotification('Failed to delete from Firestore.', 'error');
       }
     }
   };
@@ -383,12 +391,54 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
     }
   };
 
-  // Initialize details on mount/select change
+  // Fetch courses from Firestore on mount
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, 'courses'));
+        const fetched: Course[] = snapshot.docs.map((docSnap) => {
+          const data = docSnap.data();
+          return {
+            id: docSnap.id,
+            category: data.category ?? '',
+            targetRoles: data.targetRoles ?? [],
+            targetLevels: data.targetLevels ?? [],
+            interviewers: (data.interviewers ?? []).map((i: InterviewerPersona) => ({
+              id: i.id ?? `persona-${Date.now()}`,
+              name: i.name ?? '',
+              title: i.title ?? '',
+              style: i.style ?? '',
+              avatar: i.avatar ?? '/logo.png',
+            })),
+            focusAreas: data.focusAreas ?? [],
+            targetOutcomes: data.targetOutcomes ?? [],
+            growthGoals: data.growthGoals ?? [],
+            architectPrompt: data.architectPrompt ?? '',
+            interviewerPrompt: data.interviewerPrompt ?? '',
+            evaluatorPrompt: data.evaluatorPrompt ?? '',
+            coachPrompt: data.coachPrompt ?? '',
+          } as Course;
+        });
+
+        setCourses(fetched);
+        if (fetched.length > 0) {
+          setSelectedCourseId(fetched[0].id);
+        }
+      } catch (err) {
+        console.error('Failed to fetch courses:', err);
+      } finally {
+        setFirestoreLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
+  // Load details when selectedCourseId changes
   React.useEffect(() => {
     if (courses.length > 0 && selectedCourseId) {
       const active = courses.find((c) => c.id === selectedCourseId);
       if (active) {
-        // Load details without showing alert banner
         setFormCategory(active.category);
         setFormTargetRoles(active.targetRoles);
         setFormTargetLevels(active.targetLevels);
@@ -402,9 +452,10 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
         setFormInterviewerPrompt(active.interviewerPrompt);
         setFormEvaluatorPrompt(active.evaluatorPrompt);
         setFormCoachPrompt(active.coachPrompt);
+        setIsEditing(true);
       }
     }
-  }, [selectedCourseId]);
+  }, [selectedCourseId, courses]);
 
   return (
     <div className={styles.layout}>

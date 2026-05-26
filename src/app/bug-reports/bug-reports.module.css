@@ -212,7 +212,7 @@
   gap: 10px;
 }
 
-/* Elegant custom SVG avatar representation */
+/* Elegant custom avatar representation */
 .avatar {
   width: 28px;
   height: 28px;
@@ -225,13 +225,41 @@
   font-weight: 700;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-/* Actual avatar image illustration inside avatar */
+/* Actual avatar image inside avatar */
 .avatarImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 50%;
+}
+
+/* Correct behavior text in cards */
+.bugCorrectBehavior {
+  font-size: 13px;
+  color: var(--text-light);
+  line-height: 1.5;
+  font-weight: 500;
+  padding-left: 12px;
+  border-left: 3px solid #e2e8f0;
+}
+
+/* Loading spinner */
+.loadingSpinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid var(--text-primary, #0b1530);
+  border-radius: 50%;
+  animation: spinBug 0.8s linear infinite;
+  margin: 0 auto 12px auto;
+}
+
+@keyframes spinBug {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .reporterName {
