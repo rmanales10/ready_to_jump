@@ -101,7 +101,7 @@
 
 @media (max-width: 1024px) {
   .sidebar {
-    width: 100vw !important;
+    width: 100% !important;
     height: 64px !important;
     flex-direction: row !important;
     align-items: center !important;
