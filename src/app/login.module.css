@@ -3,8 +3,8 @@
   max-width: 100%;
   overflow-x: hidden;
   height: 100vh;
-  background-color: #030712; /* Rich dark navy background */
-  color: #ffffff;
+  background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%); /* Clean modern light background */
+  color: #0f0b46;
   display: flex;
   position: relative;
   overflow: hidden;
@@ -19,7 +19,8 @@
   height: auto;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.85;
+  opacity: 0.15; /* Subdued opacity for light mode */
+  filter: brightness(1.6) contrast(0.8) saturate(1.2); /* Blend into light theme perfectly */
 }
 
 .waveRight {
@@ -30,7 +31,8 @@
   height: auto;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.85;
+  opacity: 0.15; /* Subdued opacity for light mode */
+  filter: brightness(1.6) contrast(0.8) saturate(1.2); /* Blend into light theme perfectly */
 }
 
 .contentWrapper {
@@ -54,7 +56,7 @@
 .brandLogo {
   align-self: flex-start;
   margin-bottom: 8px;
-  filter: drop-shadow(0 8px 16px rgba(37, 99, 235, 0.3));
+  filter: drop-shadow(0 8px 16px rgba(15, 11, 70, 0.15));
 }
 
 .brandLogo img {
@@ -68,15 +70,15 @@
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: -1px;
-  background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+  background: linear-gradient(180deg, #0f0b46 0%, #1e1b4b 100%); /* Beautiful navy blue headings */
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .subheading {
   font-size: 16px;
-  color: #94a3b8;
-  font-weight: 400;
+  color: #475569;
+  font-weight: 500;
 }
 
 .rightColumn {
@@ -85,15 +87,15 @@
   width: 460px;
 }
 
-/* Elegant glassmorphic card for form */
+/* Elegant glassmorphic card for light form */
 .loginCard {
   width: 100%;
-  background: rgba(11, 21, 48, 0.45);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.85); /* Clean white glassmorphism */
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(15, 11, 70, 0.08);
   border-radius: 24px;
   padding: 56px 48px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 40px -15px rgba(15, 11, 70, 0.12);
   display: flex;
   flex-direction: column;
   gap: 28px;
@@ -103,7 +105,7 @@
   font-size: 24px;
   font-weight: 700;
   text-align: center;
-  color: #ffffff;
+  color: #0f0b46;
   margin-bottom: 8px;
 }
 
@@ -120,30 +122,30 @@
 
 .inputField {
   width: 100%;
-  background: rgba(3, 7, 18, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: #ffffff;
+  border: 1px solid rgba(15, 11, 70, 0.12);
   border-radius: 12px;
   padding: 16px 20px;
   font-size: 15px;
-  color: #ffffff;
+  color: #0f0b46;
   font-family: var(--font-sans);
   transition: var(--transition-smooth);
 }
 
 .inputField::placeholder {
-  color: #4b5563;
+  color: #94a3b8;
   opacity: 0.8;
 }
 
 .inputField:focus {
   outline: none;
-  border-color: var(--brand-blue);
-  background: rgba(3, 7, 18, 0.8);
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+  border-color: #2563eb;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
 }
 
 .errorText {
-  color: #ef4444;
+  color: #dc2626;
   font-size: 13px;
   font-weight: 500;
   margin-top: 4px;
@@ -152,8 +154,8 @@
 
 .loginButton {
   width: 100%;
-  background-color: #030712;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: #0f0b46; /* Deep elegant navy button */
+  border: none;
   color: #ffffff;
   font-size: 15px;
   font-weight: 700;
@@ -163,14 +165,13 @@
   transition: var(--transition-smooth);
   font-family: var(--font-sans);
   margin-top: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 14px rgba(15, 11, 70, 0.18);
 }
 
 .loginButton:hover {
-  background-color: #0b1530;
-  border-color: rgba(255, 255, 255, 0.15);
+  background-color: #1e1b4b;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 6px 20px rgba(15, 11, 70, 0.25);
 }
 
 .loginButton:active {
