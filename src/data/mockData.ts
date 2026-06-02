@@ -106,6 +106,7 @@ export interface InterviewerPersona {
   title: string;
   style: string;
   avatar: string;
+  gender?: 'male' | 'female';
 }
 
 export interface Course {
@@ -135,26 +136,28 @@ export const mockCourses: Course[] = [
         name: 'David',
         title: 'Senior Programmer',
         style: 'Challenging & Detailed',
-        avatar: '/david.png'
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop',
+        gender: 'male'
       },
       {
         id: 'persona-2',
         name: 'Elena',
         title: 'Tech Lead',
         style: 'Empathetic & Meticulous',
-        avatar: '/logo.png'
+        avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200&auto=format&fit=crop',
+        gender: 'female'
       }
     ],
     focusAreas: ['Technical Questions', 'Structured Question', 'Scenario-Based'],
     targetOutcomes: ['Upcoming Interview', 'General Growth'],
     growthGoals: ['Answer Clarity', 'Confidence', 'Reduce Filler words'],
     architectPrompt: `You are the AI Interview Architect/Planner (Ang Planner). Your role is to plan the interview structure based on the candidate's target roles and the job description provided.
-
+Custom
 1. Analyze the user's input (such as a Job Description or Resume).
 2. Construct a structured 5-stage interview syllabus tailored to test the core technical and algorithmic skills required.
 3. Pass this structured flow to the Interviewer Agent to guide the conversation step-by-step.`,
     interviewerPrompt: `You are David, a Senior Programmer AI Interviewer at a top-tier tech firm. Your style is challenging, meticulous, and detailed.
-
+ 
 Your goal is to conduct a technical interview for a software programmer candidate. 
 1. Ask one challenging question at a time.
 2. Drill deep into their answers: if they give a high-level response, ask them to explain the algorithmic complexity, trade-offs, or corner cases.
@@ -164,13 +167,13 @@ Your goal is to conduct a technical interview for a software programmer candidat
 1. Technical Correctness (0-10): Accuracy of the logic, algorithms, and concepts explained.
 2. Depth of Understanding (0-10): Ability to detail architectural trade-offs and underlying principles.
 3. Coding/Problem Solving Structure (0-10): Clear and logical breakdown of complex technical tasks.
-
+ 
 Provide a concise breakdown of scores and an overall score. Highlight strong points and technical gaps in a structured summary.`,
     coachPrompt: `You are the AI Interview Coach. Analyze the candidate's communication style, response structures, and psychological readiness:
 1. Answer Clarity: Did the candidate explain complex ideas in simple, structured terms?
 2. Confidence & Pacing: Was the tone steady, authoritative, and professional?
 3. Filler Words: Did they overuse 'um', 'like', 'uh', or repetitive phrases?
-
+ 
 Provide constructive suggestions, a practice plan, and action items to improve before the next interview round.`
   },
   {
@@ -184,14 +187,16 @@ Provide constructive suggestions, a practice plan, and action items to improve b
         name: 'Sarah',
         title: 'Lead Product Manager',
         style: 'Analytical & Structured',
-        avatar: '/logo.png'
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop',
+        gender: 'female'
       },
       {
         id: 'persona-4',
         name: 'Marcus',
         title: 'VP of Product',
         style: 'Strategic & Demanding',
-        avatar: '/logo.png'
+        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&auto=format&fit=crop',
+        gender: 'male'
       }
     ],
     focusAreas: ['Product Sense', 'Analytical Skills', 'Execution'],

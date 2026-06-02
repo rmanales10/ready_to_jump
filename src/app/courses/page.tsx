@@ -36,6 +36,33 @@ export default function CoursesPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const activeAvatarInputRef = useRef<HTMLInputElement>(null);
 
+  // Dynamic Personality Dropdown states
+  const [personalities, setPersonalities] = useState<string[]>([
+    'Empathic and Structured',
+    'Friendly and Encouraging',
+    'Professional and Direct',
+    'Constructive and Development-Oriented',
+    'Objective and Unbiased',
+    'Patient and Supportive',
+    'Motivational and Confidence-Building',
+    'Adaptive and Personalized'
+  ]);
+  const [showCustomPersonalityInput, setShowCustomPersonalityInput] = useState(false);
+  const [newPersonalityName, setNewPersonalityName] = useState('');
+
+  const handleAddCustomPersonality = () => {
+    const trimmed = newPersonalityName.trim();
+    if (trimmed) {
+      if (!personalities.includes(trimmed)) {
+        setPersonalities((prev) => [...prev, trimmed]);
+      }
+      handleActiveInterviewerChange('style', trimmed);
+      setNewPersonalityName('');
+      setShowCustomPersonalityInput(false);
+      showNotification(`Added custom style: "${trimmed}"`);
+    }
+  };
+
   // Active interviewer helper
   const activeInterviewer = useMemo(() => {
     return formInterviewers.find((i) => i.id === activeInterviewerId) || formInterviewers[0];
@@ -120,7 +147,7 @@ export default function CoursesPage() {
       name: 'Ava',
       title: 'AI Interview Lead',
       style: 'Empathetic & Structured',
-      avatar: '/logo.png'
+      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200&auto=format&fit=crop'
     };
     setFormInterviewers([defaultPersona]);
     setActiveInterviewerId(defaultPersona.id);
@@ -191,57 +218,78 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
     setTags(tags.filter((t) => t !== tagToRemove));
   };
 
-  // Handle new interviewer addition via image upload from computer
-  const handleAddNewInterviewerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle new interviewer addition via image upload from computer (Vercel Blob Storage)
+  const handleAddNewInterviewerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     const fileList = Array.from(files);
-    let loadedCount = 0;
-    const newPersonas: InterviewerPersona[] = [];
+    showNotification('Uploading image(s) to Vercel Blob Storage...', 'info');
 
-    fileList.forEach((file, index) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          const newId = `persona-${Date.now()}-${index}`;
-          newPersonas.push({
-            id: newId,
-            name: file.name.split('.')[0] || `AI Interviewer ${index + 1}`,
-            title: 'Senior Specialist',
-            style: 'Direct & Focused',
-            avatar: reader.result,
-          });
+    const newPersonas: InterviewerPersona[] = [];
+    let uploadedCount = 0;
+
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
+      try {
+        const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+          method: 'POST',
+          body: file,
+        });
+
+        if (!res.ok) {
+          throw new Error('Upload failed');
         }
-        loadedCount++;
-        
-        if (loadedCount === fileList.length) {
-          setFormInterviewers((prev) => [...prev, ...newPersonas]);
-          if (newPersonas[0]) {
-            setActiveInterviewerId(newPersonas[0].id);
-          }
-          showNotification(`Successfully created ${newPersonas.length} new interviewer(s) from computer!`);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+
+        const data = await res.json();
+        const newId = `persona-${Date.now()}-${i}`;
+        newPersonas.push({
+          id: newId,
+          name: file.name.split('.')[0] || `AI Interviewer ${i + 1}`,
+          title: 'Senior Specialist',
+          style: 'Direct & Focused',
+          avatar: data.url, // Save Vercel Blob CDN url!
+        });
+        uploadedCount++;
+      } catch (err) {
+        console.error('Error uploading to Vercel Blob:', err);
+        showNotification(`Failed to upload "${file.name}" to Vercel Blob.`, 'error');
+      }
+    }
+
+    if (newPersonas.length > 0) {
+      setFormInterviewers((prev) => [...prev, ...newPersonas]);
+      setActiveInterviewerId(newPersonas[0].id);
+      showNotification(`Successfully uploaded and created ${newPersonas.length} new interviewer(s)!`);
+    }
   };
 
-  // Handle active interviewer avatar replacement
-  const handleActiveInterviewerAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle active interviewer avatar replacement (Vercel Blob Storage)
+  const handleActiveInterviewerAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !activeInterviewer) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === 'string') {
-        setFormInterviewers((prev) =>
-          prev.map((i) => (i.id === activeInterviewer.id ? { ...i, avatar: reader.result as string } : i))
-        );
-        showNotification(`Successfully updated avatar for ${activeInterviewer.name}!`);
+    showNotification(`Uploading avatar for ${activeInterviewer.name} to Vercel Blob...`, 'info');
+
+    try {
+      const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+        method: 'POST',
+        body: file,
+      });
+
+      if (!res.ok) {
+        throw new Error('Upload failed');
       }
-    };
-    reader.readAsDataURL(file);
+
+      const data = await res.json();
+      setFormInterviewers((prev) =>
+        prev.map((i) => (i.id === activeInterviewer.id ? { ...i, avatar: data.url } : i))
+      );
+      showNotification(`Successfully updated avatar for ${activeInterviewer.name} via Vercel Blob!`);
+    } catch (err) {
+      console.error('Error updating avatar in Vercel Blob:', err);
+      showNotification('Failed to upload avatar to Vercel Blob.', 'error');
+    }
   };
 
   const triggerFileSelect = () => {
@@ -318,6 +366,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
         title: i.title,
         style: i.style,
         avatar: i.avatar,
+        gender: i.gender ?? 'male',
       })),
       focusAreas: formFocusAreas,
       targetOutcomes: formTargetOutcomes,
@@ -408,7 +457,8 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
               name: i.name ?? '',
               title: i.title ?? '',
               style: i.style ?? '',
-              avatar: i.avatar ?? '/logo.png',
+              avatar: i.avatar ?? 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200&auto=format&fit=crop',
+              gender: i.gender ?? 'male',
             })),
             focusAreas: data.focusAreas ?? [],
             targetOutcomes: data.targetOutcomes ?? [],
@@ -778,15 +828,96 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                           placeholder="AI Subtitle (e.g. Senior Programmer)"
                         />
 
-                        <div className={styles.personaStyleTag}>
-                          <input
-                            type="text"
-                            className={styles.personaStyleInput}
-                            value={activeInterviewer?.style || ''}
-                            onChange={(e) => handleActiveInterviewerChange('style', e.target.value)}
-                            placeholder="Style (e.g. Challenging)"
-                          />
+                        <div style={{ marginTop: '8px' }}>
+                          {!showCustomPersonalityInput ? (
+                            <select
+                              className={styles.personaStyleSelect}
+                              value={activeInterviewer?.style || ''}
+                              onChange={(e) => {
+                                if (e.target.value === 'ADD_NEW') {
+                                  setShowCustomPersonalityInput(true);
+                                } else {
+                                  handleActiveInterviewerChange('style', e.target.value);
+                                }
+                              }}
+                            >
+                              <option value="" disabled>Select Style / Personality</option>
+                              {personalities.map((styleOption) => (
+                                <option key={styleOption} value={styleOption}>
+                                  {styleOption}
+                                </option>
+                              ))}
+                              {activeInterviewer?.style && !personalities.includes(activeInterviewer.style) && (
+                                <option value={activeInterviewer.style}>
+                                  {activeInterviewer.style}
+                                </option>
+                              )}
+                              <option value="ADD_NEW" style={{ color: '#2dd4bf', fontWeight: 'bold' }}>
+                                + Add Custom Personality...
+                              </option>
+                            </select>
+                          ) : (
+                            <div className={styles.customStyleContainer}>
+                              <input
+                                type="text"
+                                className={styles.customStyleInput}
+                                placeholder="Add custom style..."
+                                value={newPersonalityName}
+                                onChange={(e) => setNewPersonalityName(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleAddCustomPersonality();
+                                  }
+                                }}
+                                autoFocus
+                              />
+                              <button
+                                type="button"
+                                onClick={handleAddCustomPersonality}
+                                className={styles.customStyleAddBtn}
+                              >
+                                Add
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setShowCustomPersonalityInput(false);
+                                  setNewPersonalityName('');
+                                }}
+                                className={styles.customStyleCancelBtn}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          )}
                         </div>
+
+                        {/* Dynamic Voice Gender Selection */}
+                        <div className={styles.genderSelectContainer}>
+                          <span className={styles.genderSelectLabel}>Voice Gender (TTS)</span>
+                          <div className={styles.genderButtonGroup}>
+                            <button
+                              type="button"
+                              onClick={() => handleActiveInterviewerChange('gender', 'male')}
+                              className={`${styles.genderSelectBtn} ${
+                                (activeInterviewer?.gender || 'male') === 'male' ? styles.genderActive : ''
+                              }`}
+                            >
+                              ♂ Male Voice
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleActiveInterviewerChange('gender', 'female')}
+                              className={`${styles.genderSelectBtn} ${
+                                activeInterviewer?.gender === 'female' ? styles.genderActive : ''
+                              }`}
+                            >
+                              ♀ Female Voice
+                            </button>
+                          </div>
+                        </div>
+
                       </div>
                     </div>
 

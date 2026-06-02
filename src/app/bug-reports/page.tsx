@@ -100,7 +100,11 @@ export default function BugReportsPage() {
           body: `Your reported bug "${report.title}" has been marked as "${newStatus}". Thank you for helping us improve Ready To Jump!`,
           footer: `System Update - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`,
           isRead: false,
+          isEmailSent: false,
+          isSmsSent: false,
+          type: 'bug_report',
           userId: report.reporterIdnumber,
+          createdAt: Timestamp.now(),
         });
       }
 
