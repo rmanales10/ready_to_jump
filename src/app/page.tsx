@@ -25,8 +25,13 @@ export default function LoginPage() {
     
     // Simulate beautiful micro-animation delay
     setTimeout(() => {
-      setLoading(false);
-      router.push('/dashboard');
+      if (username.trim() === 'admin@gmail.com' && password === 'admin123') {
+        setLoading(false);
+        router.push('/dashboard');
+      } else {
+        setLoading(false);
+        setError('Invalid username or password');
+      }
     }, 800);
   };
 
