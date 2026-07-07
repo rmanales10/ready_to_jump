@@ -345,6 +345,22 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
     }
   };
 
+  // Handle category deletion
+  const handleDeleteCategory = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!formCategory) return;
+    if (confirm(`Are you sure you want to delete the category "${formCategory}"?`)) {
+      const remaining = categories.filter((cat) => cat !== formCategory);
+      setCategories(remaining);
+      if (remaining.length > 0) {
+        setFormCategory(remaining[0]);
+      } else {
+        setFormCategory('');
+      }
+      showNotification(`Category "${formCategory}" removed from list.`, 'info');
+    }
+  };
+
   // Handle Save / Submit of course form — writes to Firestore
   const handleSaveCourse = async () => {
     if (formTargetRoles.length === 0) {
@@ -471,6 +487,10 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
         });
 
         setCourses(fetched);
+        const dbCategories = fetched.map((c) => c.category).filter(Boolean);
+        const uniqueCategories = Array.from(new Set(['IT', 'Product', 'Business', 'Marketing', ...dbCategories]));
+        setCategories(uniqueCategories);
+
         if (fetched.length > 0) {
           setSelectedCourseId(fetched[0].id);
         }
@@ -712,6 +732,9 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                                 ))}
                               </select>
                               <button className={styles.inlineAddBtn} onClick={() => setShowNewCategoryInput(true)}>+ New</button>
+                              {formCategory && (
+                                <button className={styles.inlineDeleteBtn} onClick={handleDeleteCategory}>Delete</button>
+                              )}
                             </>
                           )}
                         </div>
