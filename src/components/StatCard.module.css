@@ -11,6 +11,9 @@
   border: 1px solid rgba(255, 255, 255, 0.05);
   transition: var(--transition-smooth);
   flex: 1;
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .card:hover {

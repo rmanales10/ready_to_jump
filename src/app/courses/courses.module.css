@@ -44,7 +44,7 @@
 /* Split-screen panels */
 .panelContainer {
   display: flex;
-  gap: 28px;
+  gap: 24px;
   flex-grow: 1;
   height: 0; /* Flexbox trick: forces container to calculate height strictly from remaining space */
   min-height: 0; /* Prevents overflow expansion and enables perfect inner scrolling */
@@ -54,11 +54,15 @@
 
 /* Left panel: Courses list */
 .listPanel {
-  width: 38%;
+  width: 380px;
+  min-width: 320px;
+  max-width: 420px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
   height: 100%;
+  min-height: 0;
 }
 
 .listActions {
@@ -114,6 +118,8 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: var(--transition-smooth);
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
 }
@@ -129,6 +135,7 @@
 
 .scrollableList {
   flex-grow: 1;
+  min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -164,6 +171,7 @@
   position: relative;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.01);
+  flex-shrink: 0;
 }
 
 .courseCard:hover {
@@ -182,7 +190,8 @@
 .cardHeader {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 12px;
 }
 
@@ -195,6 +204,11 @@
   border-radius: 6px;
   background-color: var(--bg-light);
   color: var(--brand-blue);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+  flex-shrink: 1;
 }
 
 .activeCourseCard .categoryBadge {
@@ -203,10 +217,16 @@
 }
 
 .courseName {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
+  line-height: 1.4;
   margin-bottom: 8px;
   color: inherit;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
 }
 
 .courseRole {
@@ -237,6 +257,10 @@
   background-color: rgba(37, 99, 235, 0.08);
   color: var(--brand-blue);
   transition: var(--transition-smooth);
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .activeCourseCard .roleTag {
@@ -261,6 +285,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .avatarSnippet {
@@ -270,6 +296,7 @@
   object-fit: cover;
   border: 1px solid var(--border-light);
   background-color: #f1f5f9;
+  flex-shrink: 0;
 }
 
 .activeCourseCard .avatarSnippet {
@@ -280,6 +307,9 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .activeCourseCard .interviewerName {
@@ -288,16 +318,18 @@
 
 .promptsIndicators {
   display: flex;
-  gap: 6px;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .promptDot {
   font-size: 10px;
   font-weight: 700;
-  padding: 2px 6px;
+  padding: 3px 6px;
   border-radius: 4px;
   background-color: #f1f5f9;
   color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .activeCourseCard .promptDot {
@@ -317,7 +349,8 @@
 
 /* Right panel: Editor scroll */
 .editorPanel {
-  width: 62%;
+  flex-grow: 1;
+  min-width: 0;
   background: radial-gradient(100% 100% at 0% 0%, #0c1837 0%, #030712 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
@@ -330,12 +363,14 @@
 }
 
 .editorHeader {
-  padding: 24px 32px;
+  padding: 20px 28px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
   flex-shrink: 0;
+  flex-wrap: wrap;
   background: transparent;
 }
 
@@ -343,11 +378,14 @@
   font-size: 20px;
   font-weight: 700;
   color: #ffffff;
+  white-space: nowrap;
 }
 
 .editorActions {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .resetButton {
@@ -476,16 +514,27 @@
 /* Category selector with dynamic Add inline */
 .categorySelectContainer {
   display: flex;
+  align-items: center;
   gap: 8px;
+  width: 100%;
+}
+
+.categorySelectContainer .formSelect {
+  flex: 1;
+  min-width: 0;
+  text-overflow: ellipsis;
 }
 
 .inlineAddBtn {
-  padding: 0 16px;
+  padding: 10px 16px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background-color: rgba(255, 255, 255, 0.04);
   color: var(--brand-teal);
   font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+  flex-shrink: 0;
   cursor: pointer;
   transition: var(--transition-fast);
 }
@@ -496,12 +545,15 @@
 }
 
 .inlineDeleteBtn {
-  padding: 0 16px;
+  padding: 10px 16px;
   border-radius: 10px;
   border: 1px solid rgba(244, 63, 94, 0.2);
   background-color: rgba(244, 63, 94, 0.05);
   color: #fb7185;
   font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+  flex-shrink: 0;
   cursor: pointer;
   transition: var(--transition-fast);
 }
@@ -1007,20 +1059,23 @@
 }
 
 /* Responsive configurations */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .panelContainer {
     flex-direction: column;
     height: auto;
     overflow: visible;
   }
   
-  .listPanel, .editorPanel {
+  .listPanel {
+    width: 100%;
+    max-width: 100%;
+    height: 380px;
+  }
+
+  .editorPanel {
     width: 100%;
     height: auto;
-  }
-  
-  .editorPanel {
-    max-height: none !important;
+    min-height: 500px;
   }
   
   .mainContent {
@@ -1028,6 +1083,13 @@
     padding-top: 96px !important;
     overflow-y: auto;
     height: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 }
 

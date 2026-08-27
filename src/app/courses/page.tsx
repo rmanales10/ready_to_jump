@@ -3,6 +3,7 @@
 import React, { useState, useMemo, KeyboardEvent, useRef, useEffect } from 'react';
 import styles from './courses.module.css';
 import Sidebar from '@/components/Sidebar';
+import ConfirmModal from '@/components/ConfirmModal';
 import { SearchIcon, CoursesIcon } from '@/components/SVGIcons';
 import { Course, InterviewerPersona } from '@/data/mockData';
 import { db } from '@/lib/firebase';
@@ -13,6 +14,12 @@ export default function CoursesPage() {
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [firestoreLoading, setFirestoreLoading] = useState(true);
+  const [confirmModalConfig, setConfirmModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
 
   // Categories list state
   const [categories, setCategories] = useState<string[]>(['IT', 'Product', 'Business', 'Marketing']);
@@ -349,16 +356,23 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
   const handleDeleteCategory = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!formCategory) return;
-    if (confirm(`Are you sure you want to delete the category "${formCategory}"?`)) {
-      const remaining = categories.filter((cat) => cat !== formCategory);
-      setCategories(remaining);
-      if (remaining.length > 0) {
-        setFormCategory(remaining[0]);
-      } else {
-        setFormCategory('');
-      }
-      showNotification(`Category "${formCategory}" removed from list.`, 'info');
-    }
+
+    setConfirmModalConfig({
+      isOpen: true,
+      title: 'Delete Category',
+      message: `Are you sure you want to delete the category "${formCategory}"?`,
+      onConfirm: () => {
+        const remaining = categories.filter((cat) => cat !== formCategory);
+        setCategories(remaining);
+        if (remaining.length > 0) {
+          setFormCategory(remaining[0]);
+        } else {
+          setFormCategory('');
+        }
+        showNotification(`Category "${formCategory}" removed from list.`, 'info');
+        setConfirmModalConfig(null);
+      },
+    });
   };
 
   // Handle Save / Submit of course form — writes to Firestore
@@ -422,27 +436,34 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
   };
 
   // Handle deleting a course — deletes from Firestore
-  const handleDeleteCourse = async () => {
+  const handleDeleteCourse = () => {
     if (!selectedCourseId) return;
 
-    if (confirm('Are you sure you want to delete this course and all its AI Prompts? This action cannot be undone.')) {
-      try {
-        await deleteDoc(doc(db, 'courses', selectedCourseId));
+    setConfirmModalConfig({
+      isOpen: true,
+      title: 'Delete Course',
+      message: 'Are you sure you want to delete this course and all its AI Prompts? This action cannot be undone.',
+      onConfirm: async () => {
+        try {
+          await deleteDoc(doc(db, 'courses', selectedCourseId));
 
-        const remaining = courses.filter((c) => c.id !== selectedCourseId);
-        setCourses(remaining);
-        showNotification('Course deleted from Firestore.', 'info');
-        
-        if (remaining.length > 0) {
-          handleSelectCourse(remaining[0]);
-        } else {
-          setSelectedCourseId(null);
+          const remaining = courses.filter((c) => c.id !== selectedCourseId);
+          setCourses(remaining);
+          showNotification('Course deleted from Firestore.', 'info');
+          
+          if (remaining.length > 0) {
+            handleSelectCourse(remaining[0]);
+          } else {
+            setSelectedCourseId(null);
+          }
+        } catch (err) {
+          console.error('Firestore delete error:', err);
+          showNotification('Failed to delete from Firestore.', 'error');
+        } finally {
+          setConfirmModalConfig(null);
         }
-      } catch (err) {
-        console.error('Firestore delete error:', err);
-        showNotification('Failed to delete from Firestore.', 'error');
-      }
-    }
+      },
+    });
   };
 
   // Handle resetting the form back to actual values
@@ -618,7 +639,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                       <h3 className={styles.courseName}>{course.targetRoles[0] || 'No Roles'}</h3>
                       
                       <div className={styles.rolesContainer}>
-                        {course.targetRoles.map((role) => (
+                        {course.targetRoles.slice(0, 3).map((role) => (
                           <span
                             key={role}
                             className={styles.roleTag}
@@ -626,6 +647,11 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                             {role}
                           </span>
                         ))}
+                        {course.targetRoles.length > 3 && (
+                          <span className={styles.roleTag} style={{ opacity: 0.75 }}>
+                            +{course.targetRoles.length - 3} more
+                          </span>
+                        )}
                       </div>
 
                       <div className={styles.cardFooter}>
@@ -1169,6 +1195,19 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
           </div>
 
         </div>
+
+        {confirmModalConfig && (
+          <ConfirmModal
+            isOpen={confirmModalConfig.isOpen}
+            title={confirmModalConfig.title}
+            message={confirmModalConfig.message}
+            confirmText="Delete"
+            cancelText="Cancel"
+            type="danger"
+            onConfirm={confirmModalConfig.onConfirm}
+            onCancel={() => setConfirmModalConfig(null)}
+          />
+        )}
       </main>
     </div>
   );

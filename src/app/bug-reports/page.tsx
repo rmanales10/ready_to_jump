@@ -3,9 +3,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import styles from './bug-reports.module.css';
 import Sidebar from '@/components/Sidebar';
-import { SearchIcon, ChevronLeftIcon, ChevronRightIcon } from '@/components/SVGIcons';
+import ConfirmModal from '@/components/ConfirmModal';
+import { SearchIcon, ChevronLeftIcon, ChevronRightIcon, TrashIcon } from '@/components/SVGIcons';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, doc, updateDoc, addDoc, Timestamp, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, deleteDoc, addDoc, Timestamp, query, orderBy } from 'firebase/firestore';
 
 // Firestore bug report shape
 interface FirestoreBugReport {
@@ -22,6 +23,28 @@ interface FirestoreBugReport {
   createdAt?: Timestamp;
 }
 
+function AvatarImage({ src, name }: { src?: string; name: string }) {
+  const [hasError, setHasError] = useState(false);
+
+  if (!src || hasError) {
+    return (
+      <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>
+        {name.charAt(0).toUpperCase() || '?'}
+      </span>
+    );
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={name}
+      className={styles.avatarImage}
+      onError={() => setHasError(true)}
+    />
+  );
+}
+
 export default function BugReportsPage() {
   const [reports, setReports] = useState<FirestoreBugReport[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,6 +52,7 @@ export default function BugReportsPage() {
   const [activeTab, setActiveTab] = useState<'all' | 'in-progress' | 'resolved'>('all');
   const [sortBy, setSortBy] = useState<'newest' | 'title'>('newest');
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   const ITEMS_PER_PAGE = 5;
 
@@ -118,6 +142,24 @@ export default function BugReportsPage() {
     }
   };
 
+  // Trigger delete confirmation modal
+  const handleDeleteClick = (id: string) => {
+    setDeleteTargetId(id);
+  };
+
+  // Execute deletion from Firestore and local state
+  const confirmDeleteReport = async () => {
+    if (!deleteTargetId) return;
+    try {
+      await deleteDoc(doc(db, 'bug_reports', deleteTargetId));
+      setReports((prev) => prev.filter((report) => report.id !== deleteTargetId));
+    } catch (err) {
+      console.error('Failed to delete bug report:', err);
+    } finally {
+      setDeleteTargetId(null);
+    }
+  };
+
   // Compute stats from real data
   const stats = useMemo(() => {
     const total = reports.length;
@@ -174,28 +216,7 @@ export default function BugReportsPage() {
   // Avatar renderer — uses PRISMS pic or fallback initial
   const renderAvatar = (report: FirestoreBugReport) => (
     <div className={styles.avatar}>
-      {report.reporterPic ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={report.reporterPic}
-          alt={report.reporterName}
-          className={styles.avatarImage}
-          onError={(e) => {
-            (e.target as HTMLImageElement).style.display = 'none';
-            (e.target as HTMLImageElement).parentElement!.textContent = report.reporterName.charAt(0) || '?';
-            (e.target as HTMLImageElement).parentElement!.style.display = 'flex';
-            (e.target as HTMLImageElement).parentElement!.style.alignItems = 'center';
-            (e.target as HTMLImageElement).parentElement!.style.justifyContent = 'center';
-            (e.target as HTMLImageElement).parentElement!.style.fontSize = '14px';
-            (e.target as HTMLImageElement).parentElement!.style.fontWeight = '700';
-            (e.target as HTMLImageElement).parentElement!.style.color = '#fff';
-          }}
-        />
-      ) : (
-        <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>
-          {report.reporterName.charAt(0) || '?'}
-        </span>
-      )}
+      <AvatarImage src={report.reporterPic} name={report.reporterName} />
     </div>
   );
 
@@ -316,18 +337,29 @@ export default function BugReportsPage() {
                     </span>
                   </div>
 
-                  {/* Interactive status dropdown — updates Firestore */}
-                  <div className={styles.statusBadgeWrapper}>
-                    <select
-                      value={report.status}
-                      onChange={(e) => handleStatusChange(report.id, e.target.value as 'In Process' | 'Resolved')}
-                      className={`${styles.statusDropdown} ${
-                        report.status === 'Resolved' ? styles.statusResolved : styles.statusInProcess
-                      }`}
+                  {/* Interactive status dropdown & delete action */}
+                  <div className={styles.actionsGroup}>
+                    <button
+                      className={styles.deleteButton}
+                      onClick={() => handleDeleteClick(report.id)}
+                      title="Delete Bug Report"
                     >
-                      <option value="In Process">In Process</option>
-                      <option value="Resolved">Resolved</option>
-                    </select>
+                      <TrashIcon size={14} />
+                      <span>Delete</span>
+                    </button>
+
+                    <div className={styles.statusBadgeWrapper}>
+                      <select
+                        value={report.status}
+                        onChange={(e) => handleStatusChange(report.id, e.target.value as 'In Process' | 'Resolved')}
+                        className={`${styles.statusDropdown} ${
+                          report.status === 'Resolved' ? styles.statusResolved : styles.statusInProcess
+                        }`}
+                      >
+                        <option value="In Process">In Process</option>
+                        <option value="Resolved">Resolved</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
 
@@ -368,6 +400,18 @@ export default function BugReportsPage() {
             <ChevronRightIcon size={14} />
           </button>
         </section>
+
+        {/* Delete confirmation custom modal */}
+        <ConfirmModal
+          isOpen={!!deleteTargetId}
+          title="Delete Bug Report"
+          message="Are you sure you want to delete this bug report? This action cannot be undone."
+          confirmText="Delete Report"
+          cancelText="Cancel"
+          type="danger"
+          onConfirm={confirmDeleteReport}
+          onCancel={() => setDeleteTargetId(null)}
+        />
 
       </main>
     </div>
