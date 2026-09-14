@@ -6,7 +6,7 @@ import Sidebar from '@/components/Sidebar';
 import ConfirmModal from '@/components/ConfirmModal';
 import { SearchIcon, ChevronLeftIcon, ChevronRightIcon, TrashIcon } from '@/components/SVGIcons';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, doc, updateDoc, deleteDoc, addDoc, Timestamp, query, orderBy } from 'firebase/firestore';
+import { collection, doc, updateDoc, deleteDoc, addDoc, Timestamp, onSnapshot } from 'firebase/firestore';
 
 // Firestore bug report shape
 interface FirestoreBugReport {
@@ -56,12 +56,12 @@ export default function BugReportsPage() {
 
   const ITEMS_PER_PAGE = 5;
 
-  // Fetch bug reports from Firestore
+  // Fetch bug reports from Firestore with real-time listener
   useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        const reportsRef = collection(db, 'bug_reports');
-        const snapshot = await getDocs(reportsRef);
+    setLoading(true);
+    try {
+      const reportsRef = collection(db, 'bug_reports');
+      const unsubscribe = onSnapshot(reportsRef, (snapshot) => {
         const fetched: FirestoreBugReport[] = snapshot.docs.map((docSnap) => {
           const data = docSnap.data();
           return {
@@ -87,14 +87,17 @@ export default function BugReportsPage() {
         });
 
         setReports(fetched);
-      } catch (err) {
-        console.error('Failed to fetch bug reports:', err);
-      } finally {
         setLoading(false);
-      }
-    };
+      }, (err) => {
+        console.error('Failed to fetch bug reports:', err);
+        setLoading(false);
+      });
 
-    fetchReports();
+      return () => unsubscribe();
+    } catch (err) {
+      console.error('Failed to initialize bug reports listener:', err);
+      setLoading(false);
+    }
   }, []);
 
   // Format Firestore Timestamp
@@ -257,6 +260,7 @@ export default function BugReportsPage() {
               }}
             >
               In progress ({stats.inProgress})
+              {stats.inProgress > 0 && <span className={styles.tabDot} />}
             </button>
             
             <button
@@ -312,7 +316,15 @@ export default function BugReportsPage() {
                 
                 {/* Bug card title and date */}
                 <div className={styles.cardHeader}>
-                  <h3 className={styles.bugTitle}>{report.title}</h3>
+                  <div className={styles.titleWrapper}>
+                    <h3 className={styles.bugTitle}>{report.title}</h3>
+                    {report.status === 'In Process' && (
+                      <span className={styles.newReportBadge}>
+                        <span className={styles.pulseDot} />
+                        NEW
+                      </span>
+                    )}
+                  </div>
                   <span className={styles.bugDate}>{formatDate(report.createdAt)}</span>
                 </div>
 

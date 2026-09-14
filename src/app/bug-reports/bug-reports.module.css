@@ -63,6 +63,9 @@
 }
 
 .tabButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 8px 16px;
   border-radius: 20px;
   font-size: 13px;
@@ -80,10 +83,25 @@
   color: var(--text-primary);
 }
 
+.tabDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  display: inline-block;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+  animation: pulseDot 1.8s infinite ease-in-out;
+}
+
 .tabActive {
   background-color: #0b1530 !important;
   color: #ffffff !important;
   box-shadow: 0 4px 10px rgba(11, 21, 48, 0.15);
+}
+
+.tabActive .tabDot {
+  background-color: #f87171;
+  box-shadow: 0 0 6px rgba(248, 113, 113, 0.8);
 }
 
 .rightControls {
@@ -181,17 +199,65 @@
   justify-content: space-between;
 }
 
+.titleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .bugTitle {
   font-size: 17px;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.2px;
+  margin: 0;
+}
+
+.newReportBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #ef4444;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  line-height: 1.4;
+}
+
+.pulseDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  display: inline-block;
+  animation: pulseDot 1.8s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  70% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 5px rgba(239, 68, 68, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
 }
 
 .bugDate {
   font-size: 12px;
   font-weight: 500;
   color: var(--text-light);
+  white-space: nowrap;
 }
 
 .bugDescription {
