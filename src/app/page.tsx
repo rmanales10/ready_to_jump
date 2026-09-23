@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -22,17 +22,33 @@ export default function LoginPage() {
     }
 
     setLoading(true);
-    
-    // Simulate beautiful micro-animation delay
-    setTimeout(() => {
-      if (username.trim() === 'admin@gmail.com' && password === 'admin123') {
-        setLoading(false);
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: username.trim(),
+          password: password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
         router.push('/dashboard');
+        router.refresh();
       } else {
-        setLoading(false);
-        setError('Invalid username or password');
+        setError(data.error || 'Invalid username or password');
       }
-    }, 800);
+    } catch (err) {
+      console.error('Login submit error:', err);
+      setError('Network error. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

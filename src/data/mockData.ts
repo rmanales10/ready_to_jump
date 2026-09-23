@@ -151,7 +151,7 @@ export const mockCourses: Course[] = [
     focusAreas: ['Technical Questions', 'Structured Question', 'Scenario-Based'],
     targetOutcomes: ['Upcoming Interview', 'General Growth'],
     growthGoals: ['Answer Clarity', 'Confidence', 'Reduce Filler words'],
-    architectPrompt: `You are the AI Interview Architect/Planner (Ang Planner). Your role is to plan the interview structure based on the candidate's target roles and the job description provided.
+    architectPrompt: `You are the AI Interview Architect/Planner. Your role is to plan the interview structure based on the candidate's target roles and the job description provided in English only.
 Custom
 1. Analyze the user's input (such as a Job Description or Resume).
 2. Construct a structured 5-stage interview syllabus tailored to test the core technical and algorithmic skills required.
@@ -202,7 +202,7 @@ Provide constructive suggestions, a practice plan, and action items to improve b
     focusAreas: ['Product Sense', 'Analytical Skills', 'Execution'],
     targetOutcomes: ['Career Shift', 'General Growth'],
     growthGoals: ['Structured Frameworks', 'Communication', 'Confidence'],
-    architectPrompt: `You are the AI Interview Architect/Planner (Ang Planner). Your role is to plan the PM interview structure based on the candidate's target roles and the job description provided.
+    architectPrompt: `You are the AI Interview Architect/Planner. Your role is to plan the PM interview structure based on the candidate's target roles and the job description provided in English only.
 
 1. Analyze the user's input (Job Description, target PM level).
 2. Construct a structured PM interview flow covering Product Sense, Analytical/Execution Metrics, and Strategy.

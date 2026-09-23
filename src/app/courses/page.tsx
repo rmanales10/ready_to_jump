@@ -164,7 +164,7 @@ export default function CoursesPage() {
     setFormGrowthGoals(['Confidence', 'Answer Clarity']);
 
     // Standard high-fidelity templates for zero-code maintenance
-    setFormArchitectPrompt(`You are the AI Interview Architect/Planner (Ang Planner). Your role is to plan the interview structure based on the candidate's target roles and the job description provided.
+    setFormArchitectPrompt(`You are the AI Interview Architect/Planner. Your role is to plan the interview structure based on the candidate's target roles and the job description provided in English only.
 
 1. Analyze the user's input (Job Description, target level).
 2. Construct a structured interview flow testing the core technical and behavioral aspects.

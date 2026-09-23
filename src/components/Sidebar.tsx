@@ -33,9 +33,14 @@ export default function Sidebar() {
     }
   }, []);
 
-  const handleLogout = () => {
-    // Elegant logout flow redirecting back to home page
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
     router.push('/');
+    router.refresh();
   };
 
   return (
