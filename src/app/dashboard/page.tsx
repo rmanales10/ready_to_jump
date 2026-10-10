@@ -19,6 +19,19 @@ interface FirestoreUser {
   level?: string;
 }
 
+function getPaginationRange(current: number, total: number): (number | string)[] {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+  if (current <= 4) {
+    return [1, 2, 3, 4, 5, '...', total];
+  }
+  if (current >= total - 3) {
+    return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+  }
+  return [1, '...', current - 1, current, current + 1, '...', total];
+}
+
 export default function DashboardPage() {
   // State variables
   const [users, setUsers] = useState<FirestoreUser[]>([]);
@@ -155,24 +168,24 @@ export default function DashboardPage() {
           <div className={styles.adminProfile}>Admin</div>
         </header>
 
-        {/* Three metric counters — now computed from real data */}
+        {/* Three metric counters — enhanced styling */}
         <section className={styles.statsGrid}>
           <StatCard
             title="Active users"
             value={loading ? '—' : String(activeUsersCount)}
-            trendValue="last 7 days"
+            trendValue="Active in last 7 days"
             isPositive={true}
           />
           <StatCard
-            title="New Users"
+            title="New users"
             value={loading ? '—' : String(newUsersCount)}
-            trendValue="last 30 days"
+            trendValue="Joined in last 30 days"
             isPositive={true}
           />
           <StatCard
-            title="Total Users"
+            title="Total users"
             value={loading ? '—' : String(totalUsersCount)}
-            trendValue={`${totalUsersCount} registered`}
+            trendValue="Total registered students"
             isPositive={true}
           />
         </section>
@@ -313,31 +326,53 @@ export default function DashboardPage() {
 
           {/* Table list pagination controls */}
           <div className={styles.paginationBar}>
-            <button
-              className={`${styles.pageButton} ${validatedPage === 1 ? styles.pageDisabled : ''}`}
-              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-            >
-              <ChevronLeftIcon size={14} />
-              <span>Previous</span>
-            </button>
+            <div className={styles.paginationInfo}>
+              Showing{' '}
+              <strong style={{ color: '#0f0b46' }}>
+                {processedUsers.length === 0 ? 0 : (validatedPage - 1) * ITEMS_PER_PAGE + 1}
+              </strong>
+              –
+              <strong style={{ color: '#0f0b46' }}>
+                {Math.min(validatedPage * ITEMS_PER_PAGE, processedUsers.length)}
+              </strong>{' '}
+              of <strong style={{ color: '#0f0b46' }}>{processedUsers.length}</strong> students
+            </div>
 
-            {Array.from({ length: totalPages }).map((_, idx) => (
+            <div className={styles.paginationControls}>
               <button
-                key={idx + 1}
-                className={`${styles.pageNumber} ${validatedPage === idx + 1 ? styles.pageActive : ''}`}
-                onClick={() => setCurrentPage(idx + 1)}
+                className={`${styles.pageButton} ${validatedPage === 1 ? styles.pageDisabled : ''}`}
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                disabled={validatedPage === 1}
               >
-                {idx + 1}
+                <ChevronLeftIcon size={14} />
+                <span>Previous</span>
               </button>
-            ))}
 
-            <button
-              className={`${styles.pageButton} ${validatedPage === totalPages ? styles.pageDisabled : ''}`}
-              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-            >
-              <span>Next</span>
-              <ChevronRightIcon size={14} />
-            </button>
+              {getPaginationRange(validatedPage, totalPages).map((item, idx) =>
+                item === '...' ? (
+                  <span key={`ellipsis-${idx}`} className={styles.ellipsis}>
+                    …
+                  </span>
+                ) : (
+                  <button
+                    key={`page-${item}`}
+                    className={`${styles.pageNumber} ${validatedPage === item ? styles.pageActive : ''}`}
+                    onClick={() => setCurrentPage(item as number)}
+                  >
+                    {item}
+                  </button>
+                )
+              )}
+
+              <button
+                className={`${styles.pageButton} ${validatedPage === totalPages ? styles.pageDisabled : ''}`}
+                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                disabled={validatedPage === totalPages}
+              >
+                <span>Next</span>
+                <ChevronRightIcon size={14} />
+              </button>
+            </div>
           </div>
 
         </section>

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import styles from './Sidebar.module.css';
-import { DashboardIcon, BugReportsIcon, LogoutIcon, CoursesIcon } from './SVGIcons';
+import { DashboardIcon, BugReportsIcon, LogoutIcon, CoursesIcon, ActivityLogIcon } from './SVGIcons';
 import { db } from '@/lib/firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
 
@@ -81,6 +81,15 @@ export default function Sidebar() {
             <span>Courses & Prompts</span>
             <div className={styles.navIconWrapper}>
               <CoursesIcon size={18} />
+            </div>
+          </div>
+        </Link>
+
+        <Link href="/activity-log" passHref style={{ textDecoration: 'none' }}>
+          <div className={`${styles.navItem} ${pathname === '/activity-log' ? styles.activeItem : ''}`}>
+            <span>Activity Log</span>
+            <div className={styles.navIconWrapper}>
+              <ActivityLogIcon size={18} />
             </div>
           </div>
         </Link>
