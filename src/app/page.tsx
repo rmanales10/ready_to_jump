@@ -3,12 +3,13 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './login.module.css';
-
+import { EyeIcon, EyeOffIcon } from '@/components/SVGIcons';
 
 export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -56,9 +57,7 @@ export default function LoginPage() {
       {/* Clean PNG-based wave background graphics matching reference */}
       <img src="/wave-left.png?v=3" alt="Wave Left" className={styles.waveLeft} />
 
-
       <img src="/wave-right.png?v=3" alt="Wave Right" className={styles.waveRight} />
-
 
       <div className={styles.contentWrapper}>
         <div className={styles.leftColumn}>
@@ -90,13 +89,24 @@ export default function LoginPage() {
 
               <div className={styles.inputWrapper}>
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   placeholder="Password"
-                  className={styles.inputField}
+                  className={`${styles.inputField} ${styles.passwordInput}`}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}
+                  autoComplete="current-password"
                 />
+                <button
+                  type="button"
+                  className={styles.togglePasswordButton}
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  title={showPassword ? 'Hide password' : 'Show password'}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOffIcon size={20} /> : <EyeIcon size={20} />}
+                </button>
               </div>
               
               {error && <span className={styles.errorText}>{error}</span>}

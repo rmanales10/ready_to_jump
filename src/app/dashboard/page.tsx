@@ -148,7 +148,7 @@ export default function DashboardPage() {
 
       {/* Main user management dashboard content */}
       <main className={styles.mainContent}>
-        
+
         {/* Top administration navbar headers */}
         <header className={styles.header}>
           <h1 className={styles.title}>User management</h1>
@@ -179,7 +179,7 @@ export default function DashboardPage() {
 
         {/* Interactive user grid widget panel */}
         <section className={styles.widgetCard}>
-          
+
           {/* Controls filtering sub-header */}
           <div className={styles.controlsBar}>
             <div className={styles.searchContainer}>
@@ -281,14 +281,14 @@ export default function DashboardPage() {
                             user.level === 'Senior' || user.level === 'Expert' || user.level === 'Advanced'
                               ? 'rgba(158, 186, 243, 0.15)'
                               : user.level === 'Mid' || user.level === 'Intermediate'
-                              ? 'rgba(255, 171, 0, 0.15)'
-                              : 'rgba(76, 175, 80, 0.15)',
+                                ? 'rgba(255, 171, 0, 0.15)'
+                                : 'rgba(76, 175, 80, 0.15)',
                           color:
                             user.level === 'Senior' || user.level === 'Expert' || user.level === 'Advanced'
                               ? '#4c4ddc'
                               : user.level === 'Mid' || user.level === 'Intermediate'
-                              ? '#E65100'
-                              : '#2E7D32',
+                                ? '#E65100'
+                                : '#2E7D32',
                           textTransform: 'uppercase',
                           boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
                         }}>
@@ -320,7 +320,7 @@ export default function DashboardPage() {
               <ChevronLeftIcon size={14} />
               <span>Previous</span>
             </button>
-            
+
             {Array.from({ length: totalPages }).map((_, idx) => (
               <button
                 key={idx + 1}

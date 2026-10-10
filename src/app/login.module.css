@@ -144,6 +144,37 @@
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
 }
 
+.passwordInput {
+  padding-right: 50px;
+}
+
+.togglePasswordButton {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  border-radius: 8px;
+  transition: color 0.18s ease, background-color 0.18s ease;
+}
+
+.togglePasswordButton:hover {
+  color: #0f0b46;
+  background-color: rgba(15, 11, 70, 0.06);
+}
+
+.togglePasswordButton:focus {
+  outline: none;
+  color: #0f0b46;
+}
+
 .errorText {
   color: #dc2626;
   font-size: 13px;
