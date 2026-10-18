@@ -9,6 +9,9 @@ import { Course, InterviewerPersona } from '@/data/mockData';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
 
+const categoryDocumentId = (name: string) =>
+  encodeURIComponent(name.trim().toLowerCase());
+
 export default function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
@@ -22,7 +25,7 @@ export default function CoursesPage() {
   } | null>(null);
 
   // Categories list state
-  const [categories, setCategories] = useState<string[]>(['IT', 'Product', 'Business', 'Marketing']);
+  const [categories, setCategories] = useState<string[]>([]);
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
 
@@ -145,7 +148,7 @@ export default function CoursesPage() {
     setIsEditing(false);
 
     // Set clean defaults
-    setFormCategory(categories[0] || 'IT');
+    setFormCategory(categories[0] || '');
     setFormTargetRoles(['Software Engineer', 'Programmer']);
     setFormTargetLevels(['Junior', 'Mid']);
     
@@ -341,14 +344,30 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
   };
 
   // Handle category additions
-  const handleAddCategory = () => {
+  const handleAddCategory = async () => {
     const trimmed = newCategoryName.trim();
-    if (trimmed && !categories.includes(trimmed)) {
-      setCategories([...categories, trimmed]);
+    if (!trimmed) return;
+
+    if (categories.some((category) => category.toLowerCase() === trimmed.toLowerCase())) {
+      showNotification(`Category "${trimmed}" already exists.`, 'info');
+      return;
+    }
+
+    try {
+      await setDoc(
+        doc(db, 'categories', categoryDocumentId(trimmed)),
+        { name: trimmed, active: true },
+        { merge: true }
+      );
+
+      setCategories((current) => [...current, trimmed].sort((a, b) => a.localeCompare(b)));
       setFormCategory(trimmed);
       setNewCategoryName('');
       setShowNewCategoryInput(false);
       showNotification(`Category "${trimmed}" added successfully!`, 'success');
+    } catch (err) {
+      console.error('Firestore category save error:', err);
+      showNotification('Failed to save category to Firestore.', 'error');
     }
   };
 
@@ -357,26 +376,40 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
     e.preventDefault();
     if (!formCategory) return;
 
+    const categoryToDelete = formCategory;
+
     setConfirmModalConfig({
       isOpen: true,
       title: 'Delete Category',
-      message: `Are you sure you want to delete the category "${formCategory}"?`,
-      onConfirm: () => {
-        const remaining = categories.filter((cat) => cat !== formCategory);
-        setCategories(remaining);
-        if (remaining.length > 0) {
-          setFormCategory(remaining[0]);
-        } else {
-          setFormCategory('');
+      message: `Are you sure you want to delete the category "${categoryToDelete}"? Existing courses and historical records will be preserved.`,
+      onConfirm: async () => {
+        try {
+          await setDoc(
+            doc(db, 'categories', categoryDocumentId(categoryToDelete)),
+            { name: categoryToDelete, active: false },
+            { merge: true }
+          );
+
+          const remaining = categories.filter((cat) => cat !== categoryToDelete);
+          setCategories(remaining);
+          setFormCategory(remaining[0] || '');
+          showNotification(`Category "${categoryToDelete}" removed.`, 'info');
+        } catch (err) {
+          console.error('Firestore category delete error:', err);
+          showNotification('Failed to delete category from Firestore.', 'error');
+        } finally {
+          setConfirmModalConfig(null);
         }
-        showNotification(`Category "${formCategory}" removed from list.`, 'info');
-        setConfirmModalConfig(null);
       },
     });
   };
 
   // Handle Save / Submit of course form — writes to Firestore
   const handleSaveCourse = async () => {
+    if (!formCategory || !categories.includes(formCategory)) {
+      showNotification('Please select an active category before saving.', 'error');
+      return;
+    }
     if (formTargetRoles.length === 0) {
       showNotification('Target Roles cannot be empty. Please specify at least one target role.', 'error');
       return;
@@ -477,11 +510,14 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
     }
   };
 
-  // Fetch courses from Firestore on mount
+  // Fetch courses and the persistent category registry from Firestore on mount
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const snapshot = await getDocs(collection(db, 'courses'));
+        const [snapshot, categorySnapshot] = await Promise.all([
+          getDocs(collection(db, 'courses')),
+          getDocs(collection(db, 'categories')),
+        ]);
         const fetched: Course[] = snapshot.docs.map((docSnap) => {
           const data = docSnap.data();
           return {
@@ -508,9 +544,32 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
         });
 
         setCourses(fetched);
-        const dbCategories = fetched.map((c) => c.category).filter(Boolean);
-        const uniqueCategories = Array.from(new Set(['IT', 'Product', 'Business', 'Marketing', ...dbCategories]));
-        setCategories(uniqueCategories);
+
+        let activeCategories: string[];
+        if (categorySnapshot.empty) {
+          // One-time migration for installations that predate the category registry.
+          activeCategories = Array.from(
+            new Set(fetched.map((course) => course.category.trim()).filter(Boolean))
+          ).sort((a, b) => a.localeCompare(b));
+
+          await Promise.all(
+            activeCategories.map((name) =>
+              setDoc(
+                doc(db, 'categories', categoryDocumentId(name)),
+                { name, active: true },
+                { merge: true }
+              )
+            )
+          );
+        } else {
+          activeCategories = categorySnapshot.docs
+            .map((categoryDoc) => categoryDoc.data())
+            .filter((data) => data.active !== false && typeof data.name === 'string')
+            .map((data) => data.name.trim())
+            .filter(Boolean)
+            .sort((a, b) => a.localeCompare(b));
+        }
+        setCategories(activeCategories);
 
         if (fetched.length > 0) {
           setSelectedCourseId(fetched[0].id);
@@ -753,6 +812,11 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                                 value={formCategory}
                                 onChange={(e) => setFormCategory(e.target.value)}
                               >
+                                {formCategory && !categories.includes(formCategory) && (
+                                  <option value={formCategory} disabled>
+                                    {formCategory} (inactive)
+                                  </option>
+                                )}
                                 {categories.map((cat) => (
                                   <option key={cat} value={cat}>{cat}</option>
                                 ))}
