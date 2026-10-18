@@ -180,12 +180,12 @@ Your goal is to conduct a professional interview for the candidate:
 2. Listen to their responses and ask follow-up questions to understand their specific thought process.
 3. Be professional and encouraging. Try to draw out their practical expertise.`);
 
-    setFormEvaluatorPrompt(`Evaluate the candidate's answers based on the following:
-1. Conceptual Understanding (0-10): Accuracy of concepts explained.
-2. Logic (0-10): Structural coherence and reasoning of the solution.
-3. Communication (0-10): Articulation of the response.
+    setFormEvaluatorPrompt(`Evaluate the candidate's answers for this course using evidence from the interview transcript. Apply the mobile app's 0-100 scoring rubric:
+1. Tone: Confidence and Enthusiasm.
+2. Speech: Clarity and Pace of the explanation. Do not infer vocal qualities from text.
+3. Content: Technical Accuracy and Depth, including reasoning and concrete examples.
 
-Provide an average score, highlighting key strengths and areas of improvements.`);
+Score each of the six metrics. Each category is the average of its two metrics, and the overall score is the average of the three categories. Explain the strongest evidence and the most useful improvement.`);
 
     setFormCoachPrompt(`As an AI Coach, analyze the candidate's interview performance:
 1. Frameworks: Did they structure their answer step-by-step?
