@@ -230,7 +230,7 @@ export default function BugReportsPage() {
 
       {/* Main bug reports content */}
       <main className={styles.mainContent}>
-        
+
         {/* Top administration navbar headers */}
         <header className={styles.header}>
           <h1 className={styles.title}>User bug report</h1>
@@ -240,8 +240,8 @@ export default function BugReportsPage() {
         {/* Tab Filters and Controls panel */}
         <section className={styles.topControls}>
           <div className={styles.tabGroup}>
-            <span className={styles.tabTitle}>Bug Reports</span>
-            
+
+
             <button
               className={`${styles.tabButton} ${activeTab === 'all' ? styles.tabActive : ''}`}
               onClick={() => {
@@ -251,7 +251,7 @@ export default function BugReportsPage() {
             >
               all Reports ({stats.total})
             </button>
-            
+
             <button
               className={`${styles.tabButton} ${activeTab === 'in-progress' ? styles.tabActive : ''}`}
               onClick={() => {
@@ -262,7 +262,7 @@ export default function BugReportsPage() {
               In progress ({stats.inProgress})
               {stats.inProgress > 0 && <span className={styles.tabDot} />}
             </button>
-            
+
             <button
               className={`${styles.tabButton} ${activeTab === 'resolved' ? styles.tabActive : ''}`}
               onClick={() => {
@@ -313,7 +313,7 @@ export default function BugReportsPage() {
           ) : paginatedReports.length > 0 ? (
             paginatedReports.map((report) => (
               <div key={report.id} className={styles.bugCard}>
-                
+
                 {/* Bug card title and date */}
                 <div className={styles.cardHeader}>
                   <div className={styles.titleWrapper}>
@@ -364,9 +364,8 @@ export default function BugReportsPage() {
                       <select
                         value={report.status}
                         onChange={(e) => handleStatusChange(report.id, e.target.value as 'In Process' | 'Resolved')}
-                        className={`${styles.statusDropdown} ${
-                          report.status === 'Resolved' ? styles.statusResolved : styles.statusInProcess
-                        }`}
+                        className={`${styles.statusDropdown} ${report.status === 'Resolved' ? styles.statusResolved : styles.statusInProcess
+                          }`}
                       >
                         <option value="In Process">In Process</option>
                         <option value="Resolved">Resolved</option>
@@ -393,7 +392,7 @@ export default function BugReportsPage() {
             <ChevronLeftIcon size={14} />
             <span>Previous</span>
           </button>
-          
+
           {Array.from({ length: totalPages }).map((_, idx) => (
             <button
               key={idx + 1}

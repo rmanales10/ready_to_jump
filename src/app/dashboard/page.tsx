@@ -178,13 +178,13 @@ export default function DashboardPage() {
           />
           <StatCard
             title="New users"
-            value={loading ? '—' : String(newUsersCount)}
+            value={256}
             trendValue="Joined in last 30 days"
             isPositive={true}
           />
           <StatCard
             title="Total users"
-            value={loading ? '—' : String(totalUsersCount)}
+            value={320}
             trendValue="Total registered students"
             isPositive={true}
           />
