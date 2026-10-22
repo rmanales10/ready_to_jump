@@ -6,7 +6,7 @@ import Sidebar from '@/components/Sidebar';
 import StatCard from '@/components/StatCard';
 import { SearchIcon, ChevronLeftIcon, ChevronRightIcon } from '@/components/SVGIcons';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, Timestamp } from 'firebase/firestore';
 
 // Firestore user shape
 interface FirestoreUser {
@@ -15,6 +15,7 @@ interface FirestoreUser {
   email?: string;
   phone?: string;
   pic?: string;
+  createdAt?: Timestamp;
   lastLogin?: Timestamp;
   level?: string;
 }
@@ -42,12 +43,12 @@ export default function DashboardPage() {
 
   const ITEMS_PER_PAGE = 7;
 
-  // Fetch users from Firestore on mount
+  // Keep the dashboard synchronized with Firestore.
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const usersRef = collection(db, 'users');
-        const snapshot = await getDocs(usersRef);
+    const usersRef = collection(db, 'users');
+    const unsubscribe = onSnapshot(
+      usersRef,
+      (snapshot) => {
         const fetched: FirestoreUser[] = snapshot.docs.map((doc) => {
           const data = doc.data();
           return {
@@ -56,31 +57,22 @@ export default function DashboardPage() {
             email: data.email ?? '',
             phone: data.phone ?? '',
             pic: data.pic ?? '',
+            createdAt: data.createdAt ?? null,
             lastLogin: data.lastLogin ?? null,
             level: data.level ?? 'Junior',
           };
         });
         setUsers(fetched);
-      } catch (err) {
+        setLoading(false);
+      },
+      (err) => {
         console.error('Failed to fetch users:', err);
-      } finally {
         setLoading(false);
       }
-    };
+    );
 
-    fetchUsers();
+    return unsubscribe;
   }, []);
-
-  // Format Firestore Timestamp to readable date
-  const formatDate = (timestamp?: Timestamp | null): string => {
-    if (!timestamp) return '—';
-    const date = timestamp.toDate();
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
 
   // Format Firestore Timestamp to readable date+time
   const formatDateTime = (timestamp?: Timestamp | null): string => {
@@ -145,8 +137,10 @@ export default function DashboardPage() {
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
   const newUsersCount = users.filter((u) => {
-    if (!u.lastLogin) return false;
-    return u.lastLogin.toDate() >= thirtyDaysAgo;
+    // Older records predate createdAt, so use lastLogin as their fallback.
+    const registrationDate = u.createdAt ?? u.lastLogin;
+    if (!registrationDate) return false;
+    return registrationDate.toDate() >= thirtyDaysAgo;
   }).length;
 
   const activeUsersCount = users.filter((u) => {
@@ -178,13 +172,13 @@ export default function DashboardPage() {
           />
           <StatCard
             title="New users"
-            value={256}
+            value={loading ? '—' : String(newUsersCount)}
             trendValue="Joined in last 30 days"
             isPositive={true}
           />
           <StatCard
             title="Total users"
-            value={320}
+            value={loading ? '—' : String(totalUsersCount)}
             trendValue="Total registered students"
             isPositive={true}
           />
