@@ -7,7 +7,7 @@ import ConfirmModal from '@/components/ConfirmModal';
 import { SearchIcon, CoursesIcon } from '@/components/SVGIcons';
 import { Course, InterviewerPersona } from '@/data/mockData';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 
 const categoryDocumentId = (name: string) =>
   encodeURIComponent(name.trim().toLowerCase());
@@ -21,6 +21,8 @@ export default function CoursesPage() {
     isOpen: boolean;
     title: string;
     message: string;
+    confirmText?: string;
+    type?: 'danger' | 'warning' | 'info';
     onConfirm: () => void;
   } | null>(null);
 
@@ -28,6 +30,8 @@ export default function CoursesPage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [renamingCategory, setRenamingCategory] = useState(false);
+  const [renamedCategory, setRenamedCategory] = useState('');
 
   // Form states
   const [isEditing, setIsEditing] = useState(true);
@@ -364,7 +368,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
       setFormCategory(trimmed);
       setNewCategoryName('');
       setShowNewCategoryInput(false);
-      showNotification(`Category "${trimmed}" added successfully!`, 'success');
+      showNotification(`Category "${trimmed}" added. Click Create Course to make it available in the app.`, 'success');
     } catch (err) {
       console.error('Firestore category save error:', err);
       showNotification('Failed to save category to Firestore.', 'error');
@@ -372,6 +376,58 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
   };
 
   // Handle category deletion
+  const handleRenameCategory = () => {
+    const oldName = formCategory;
+    const newName = renamedCategory.trim();
+    if (!oldName || !newName) {
+      showNotification('Enter a category name.', 'error');
+      return;
+    }
+    if (newName.toLowerCase() === oldName.toLowerCase()) {
+      showNotification('Enter a different category name.', 'error');
+      return;
+    }
+    if (categories.some((name) => name.toLowerCase() === newName.toLowerCase())) {
+      showNotification('That category already exists.', 'error');
+      return;
+    }
+    setConfirmModalConfig({
+      isOpen: true,
+      title: 'Rename Category',
+      message: `Rename "${oldName}" to "${newName}"? All courses in this category will be updated.`,
+      confirmText: 'Rename',
+      type: 'info',
+      onConfirm: async () => {
+        try {
+          const snapshot = await getDocs(collection(db, 'courses'));
+          const affected = snapshot.docs.filter((course) => course.data().category === oldName);
+          const oldRef = doc(db, 'categories', categoryDocumentId(oldName));
+          const newRef = doc(db, 'categories', categoryDocumentId(newName));
+          const operations = [
+            { ref: newRef, data: { name: newName, active: true } },
+            { ref: oldRef, data: { name: oldName, active: false } },
+            ...affected.map((course) => ({ ref: course.ref, data: { category: newName } })),
+          ];
+          if (operations.length > 500) throw new Error('Too many courses for one rename.');
+          const batch = writeBatch(db);
+          operations.forEach(({ ref, data }) => batch.set(ref, data, { merge: true }));
+          await batch.commit();
+          setCourses((current) => current.map((course) => course.category === oldName ? { ...course, category: newName } : course));
+          setCategories((current) => current.map((name) => name === oldName ? newName : name).sort((a, b) => a.localeCompare(b)));
+          setFormCategory(newName);
+          setRenamingCategory(false);
+          setRenamedCategory('');
+          showNotification(`Category renamed to "${newName}" and ${affected.length} course(s) updated.`);
+        } catch (err) {
+          console.error('Category rename failed:', err);
+          showNotification('Could not rename the category. No changes were saved.', 'error');
+        } finally {
+          setConfirmModalConfig(null);
+        }
+      },
+    });
+  };
+
   const handleDeleteCategory = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!formCategory) return;
@@ -822,12 +878,20 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                                 ))}
                               </select>
                               <button className={styles.inlineAddBtn} onClick={() => setShowNewCategoryInput(true)}>+ New</button>
+                              {formCategory && <button className={styles.inlineAddBtn} onClick={() => { setRenamedCategory(formCategory); setRenamingCategory(true); }}>Rename</button>}
                               {formCategory && (
                                 <button className={styles.inlineDeleteBtn} onClick={handleDeleteCategory}>Delete</button>
                               )}
                             </>
                           )}
                         </div>
+                        {renamingCategory && (
+                          <div className={styles.categorySelectContainer}>
+                            <input className={styles.formInput} value={renamedCategory} onChange={(e) => setRenamedCategory(e.target.value)} aria-label="New category name" />
+                            <button className={styles.inlineAddBtn} onClick={handleRenameCategory}>Save Name</button>
+                            <button className={styles.resetButton} onClick={() => setRenamingCategory(false)}>Cancel</button>
+                          </div>
+                        )}
                       </div>
 
                       <div className={styles.formGroup}>
@@ -851,7 +915,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                     </div>
 
                     <div className={styles.formGroup}>
-                      <label className={styles.formLabel}>Target Roles (Add Multiple Roles Possible)</label>
+                      <label className={styles.formLabel}>Target Roles (first role is the course card title; click a tag to remove a typo, then enter its correction and Save Changes)</label>
                       <div className={styles.tagsContainer}>
                         {formTargetRoles.map((role) => (
                           <span
@@ -1265,9 +1329,9 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
             isOpen={confirmModalConfig.isOpen}
             title={confirmModalConfig.title}
             message={confirmModalConfig.message}
-            confirmText="Delete"
+            confirmText={confirmModalConfig.confirmText ?? 'Delete'}
             cancelText="Cancel"
-            type="danger"
+            type={confirmModalConfig.type ?? 'danger'}
             onConfirm={confirmModalConfig.onConfirm}
             onCancel={() => setConfirmModalConfig(null)}
           />
