@@ -111,6 +111,8 @@ export interface InterviewerPersona {
 
 export interface Course {
   id: string;
+  createdAt?: number;
+  name?: string;
   category: string;
   targetRoles: string[];
   targetLevels: ('Junior' | 'Mid' | 'Senior')[];

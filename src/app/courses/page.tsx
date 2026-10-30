@@ -30,6 +30,18 @@ export default function CoursesPage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [draftCategory, setDraftCategory] = useState('');
+  const [courseName, setCourseName] = useState('');
+  const [step, setStep] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasDraftChanges, setHasDraftChanges] = useState(false);
+
+  useEffect(() => {
+    if (!hasDraftChanges) return;
+    const warnBeforeLeaving = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ''; };
+    window.addEventListener('beforeunload', warnBeforeLeaving);
+    return () => window.removeEventListener('beforeunload', warnBeforeLeaving);
+  }, [hasDraftChanges]);
   const [renamingCategory, setRenamingCategory] = useState(false);
   const [renamedCategory, setRenamedCategory] = useState('');
 
@@ -112,20 +124,25 @@ export default function CoursesPage() {
   const filteredCourses = useMemo(() => {
     return courses.filter((course) => {
       const q = searchQuery.toLowerCase();
-      const rolesMatch = course.targetRoles.some(role => role.toLowerCase().includes(q));
+      const rolesMatch = course.targetRoles.some(role => role.toLowerCase().includes(q)) || (course.name || '').toLowerCase().includes(q);
       const categoryMatch = course.category.toLowerCase().includes(q);
       const interviewerMatch = course.interviewers?.some(i => i.name.toLowerCase().includes(q)) || false;
       return rolesMatch || categoryMatch || interviewerMatch;
-    });
+    }).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
   }, [courses, searchQuery]);
 
   // Load course details into form when a course is selected
   const handleSelectCourse = (course: Course) => {
+    if (hasDraftChanges && !window.confirm('Discard unsaved course changes?')) return;
+    setHasDraftChanges(false);
+    setStep(0);
     setSelectedCourseId(course.id);
     setIsEditing(true);
 
     // Load general details
     setFormCategory(course.category);
+    setCourseName(course.name || course.targetRoles[0] || '');
+    setDraftCategory('');
     setFormTargetRoles(course.targetRoles);
     setFormTargetLevels(course.targetLevels);
 
@@ -148,12 +165,17 @@ export default function CoursesPage() {
 
   // Initialize form for a brand new course
   const handleAddNewCourseClick = () => {
+    if (hasDraftChanges && !window.confirm('Discard unsaved course changes?')) return;
+    setHasDraftChanges(true);
+    setStep(0);
     setSelectedCourseId(null);
     setIsEditing(false);
 
     // Set clean defaults
     setFormCategory(categories[0] || '');
-    setFormTargetRoles(['Software Engineer', 'Programmer']);
+    setCourseName('');
+    setDraftCategory('');
+    setFormTargetRoles([]);
     setFormTargetLevels(['Junior', 'Mid']);
     
     const defaultPersona: InterviewerPersona = {
@@ -210,6 +232,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
   ) => {
     const trimmed = input.trim();
     if (trimmed && !tags.includes(trimmed)) {
+      setHasDraftChanges(true);
       setTags([...tags, trimmed]);
       setInput('');
     }
@@ -322,6 +345,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
     }
 
     const updated = formInterviewers.filter((i) => i.id !== id);
+    setHasDraftChanges(true);
     setFormInterviewers(updated);
 
     if (activeInterviewerId === id) {
@@ -357,6 +381,15 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
       return;
     }
 
+    if (!isEditing) {
+      setDraftCategory(trimmed);
+      setFormCategory(trimmed);
+      setNewCategoryName('');
+      setShowNewCategoryInput(false);
+      setHasDraftChanges(true);
+      showNotification(`Category "${trimmed}" is part of this draft. It will be saved when you create the course.`, 'info');
+      return;
+    }
     try {
       await setDoc(
         doc(db, 'categories', categoryDocumentId(trimmed)),
@@ -462,20 +495,34 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
 
   // Handle Save / Submit of course form — writes to Firestore
   const handleSaveCourse = async () => {
-    if (!formCategory || !categories.includes(formCategory)) {
+    if (!courseName.trim()) {
+      setStep(0);
+      showNotification('Enter a course name.', 'error');
+      return;
+    }
+    if (!formCategory || (!categories.includes(formCategory) && formCategory !== draftCategory)) {
+      setStep(0);
       showNotification('Please select an active category before saving.', 'error');
       return;
     }
     if (formTargetRoles.length === 0) {
+      setStep(0);
       showNotification('Target Roles cannot be empty. Please specify at least one target role.', 'error');
       return;
     }
     if (formInterviewers.length === 0) {
+      setStep(1);
       showNotification('AI Interviewer pool must have at least one persona.', 'error');
       return;
     }
 
+    if (courses.some((course) => course.id !== selectedCourseId && course.category.toLowerCase() === formCategory.toLowerCase() && (course.name || course.targetRoles[0] || '').trim().toLowerCase() === courseName.trim().toLowerCase())) {
+      setStep(0);
+      showNotification('A course with that name already exists in this category.', 'error');
+      return;
+    }
     const courseData = {
+      name: courseName.trim(),
       category: formCategory,
       targetRoles: formTargetRoles,
       targetLevels: formTargetLevels,
@@ -497,9 +544,10 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
     };
 
     try {
+      setIsSaving(true);
       if (isEditing && selectedCourseId) {
         // Update existing in Firestore
-        await setDoc(doc(db, 'courses', selectedCourseId), courseData);
+        await setDoc(doc(db, 'courses', selectedCourseId), courseData, { merge: true });
 
         setCourses(
           courses.map((course) =>
@@ -509,18 +557,32 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
         showNotification('Course saved to Firestore! Changes are now live on the mobile app.');
       } else {
         // Create new in Firestore
-        const newCourseId = `course-${Date.now()}`;
-        await setDoc(doc(db, 'courses', newCourseId), courseData);
+        const createdAt = Date.now();
+        const newCourseId = `course-${createdAt}`;
+        const newCourseData = { ...courseData, createdAt };
+        if (draftCategory) {
+          const batch = writeBatch(db);
+          batch.set(doc(db, 'categories', categoryDocumentId(draftCategory)), { name: draftCategory, active: true }, { merge: true });
+          batch.set(doc(db, 'courses', newCourseId), newCourseData);
+          await batch.commit();
+          setCategories((current) => [...current, draftCategory].sort((a, b) => a.localeCompare(b)));
+          setDraftCategory('');
+        } else {
+          await setDoc(doc(db, 'courses', newCourseId), newCourseData);
+        }
 
-        const newCourse: Course = { id: newCourseId, ...courseData } as Course;
-        setCourses([...courses, newCourse]);
+        const newCourse: Course = { id: newCourseId, ...courseData, createdAt } as Course;
+        setCourses([newCourse, ...courses]);
         setSelectedCourseId(newCourseId);
         setIsEditing(true);
         showNotification('New course created in Firestore! Mobile app can now use these prompts.');
       }
+      setHasDraftChanges(false);
     } catch (err) {
       console.error('Firestore save error:', err);
       showNotification('Failed to save to Firestore. Check console for details.', 'error');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -578,6 +640,8 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
           const data = docSnap.data();
           return {
             id: docSnap.id,
+            name: data.name ?? '',
+            createdAt: data.createdAt ?? 0,
             category: data.category ?? '',
             targetRoles: data.targetRoles ?? [],
             targetLevels: data.targetLevels ?? [],
@@ -646,6 +710,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
       const active = courses.find((c) => c.id === selectedCourseId);
       if (active) {
         setFormCategory(active.category);
+        setCourseName(active.name || active.targetRoles[0] || '');
         setFormTargetRoles(active.targetRoles);
         setFormTargetLevels(active.targetLevels);
         const ints = active.interviewers || [];
@@ -751,7 +816,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                       </div>
 
                       {/* Display primary role and target roles badges */}
-                      <h3 className={styles.courseName}>{course.targetRoles[0] || 'No Roles'}</h3>
+                      <h3 className={styles.courseName}>{course.name || course.targetRoles[0] || 'Untitled Course'}</h3>
                       
                       <div className={styles.rolesContainer}>
                         {course.targetRoles.slice(0, 3).map((role) => (
@@ -820,16 +885,19 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                     <button className={styles.resetButton} onClick={handleResetForm}>
                       Reset
                     </button>
-                    <button className={styles.saveButton} onClick={handleSaveCourse}>
-                      {isEditing ? 'Save Changes' : 'Create Course'}
-                    </button>
+                    {isEditing ? <button className={styles.saveButton} disabled={isSaving} onClick={handleSaveCourse}>{isSaving ? 'Saving...' : 'Save Changes'}</button> : <span className={styles.stepCount}>Step {step + 1} of 5</span>}
                   </div>
                 </div>
 
-                <div className={styles.scrollableEditor}>
+                <div className={styles.stepNavigation}>
+                  {['Course & roles', 'AI interviewers', 'Goals', 'Prompts', 'Review'].map((label, index) => (
+                    <button key={label} type="button" className={`${styles.stepButton} ${step === index ? styles.stepButtonActive : ''}`} onClick={() => setStep(index)}>{index + 1}. {label}</button>
+                  ))}
+                </div>
+                <div className={styles.scrollableEditor} onChange={() => setHasDraftChanges(true)}>
                   
                   {/* ZERO-CODE MAINTENANCE INFO */}
-                  <div className={styles.tipsBanner}>
+                  {step === 3 && <div className={styles.tipsBanner}>
                      <div className={styles.tipsIcon}>💡</div>
                     <div className={styles.tipsContent}>
                       <h4 className={styles.tipsTitle}>Zero-Code AI Prompt Maintenance System</h4>
@@ -837,11 +905,16 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                         Editing these fields updates the AI's behavior instantly! Type instructions directly into the prompts textareas below. This updates the **Interviewer, Evaluator, and Coach** agents on-the-fly without needing developer code modifications.
                       </p>
                     </div>
-                  </div>
+                  </div>}
 
                   {/* SECTION 1: General Info */}
-                  <div className={styles.editorSection}>
+                  {step === 0 && <div className={styles.editorSection}>
                     <h3 className={styles.sectionTitle}>1. Course General Settings</h3>
+                    <div className={styles.formGroup}>
+                      <label className={styles.formLabel} htmlFor="courseName">Course Name</label>
+                      <input id="courseName" className={styles.formInput} value={courseName} onChange={(e) => setCourseName(e.target.value)} placeholder="e.g. Bachelor of Science in Information Technology" />
+                    </div>
+                    {draftCategory && <p className={styles.draftNote}>New category “{draftCategory}” will be saved when you create this course.</p>}
                     
                     <div className={styles.grid2}>
                       <div className={styles.formGroup}>
@@ -866,13 +939,14 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                                 className={styles.formSelect}
                                 style={{ flexGrow: 1 }}
                                 value={formCategory}
-                                onChange={(e) => setFormCategory(e.target.value)}
+                                onChange={(e) => { setFormCategory(e.target.value); if (e.target.value !== draftCategory) setDraftCategory(''); }}
                               >
                                 {formCategory && !categories.includes(formCategory) && (
                                   <option value={formCategory} disabled>
                                     {formCategory} (inactive)
                                   </option>
                                 )}
+                                {draftCategory && <option value={draftCategory}>{draftCategory} (new)</option>}
                                 {categories.map((cat) => (
                                   <option key={cat} value={cat}>{cat}</option>
                                 ))}
@@ -915,7 +989,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                     </div>
 
                     <div className={styles.formGroup}>
-                      <label className={styles.formLabel}>Target Roles (first role is the course card title; click a tag to remove a typo, then enter its correction and Save Changes)</label>
+                      <label className={styles.formLabel}>Target Roles (click a tag to remove a typo, then enter its correction)</label>
                       <div className={styles.tagsContainer}>
                         {formTargetRoles.map((role) => (
                           <span
@@ -940,10 +1014,10 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                         />
                       </div>
                     </div>
-                  </div>
+                  </div>}
 
                   {/* SECTION 2: AI Interviewer Persona Card */}
-                  <div className={styles.editorSection}>
+                  {step === 1 && <div className={styles.editorSection}>
                     <h3 className={styles.sectionTitle}>2. AI Interviewer Persona</h3>
                     
                     <div className={styles.personaCardPreview}>
@@ -1153,10 +1227,10 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </div>}
 
                   {/* SECTION 3: Dynamic Mockup Struct Tags */}
-                  <div className={styles.editorSection}>
+                  {step === 2 && <div className={styles.editorSection}>
                     <h3 className={styles.sectionTitle}>3. Mockup Goals & Categories Structure</h3>
                     
                     <div className={styles.formGroup}>
@@ -1244,10 +1318,10 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                         />
                       </div>
                     </div>
-                  </div>
+                  </div>}
 
                   {/* SECTION 4: Zero-Code Prompts Editor */}
-                  <div className={styles.editorSection}>
+                  {step === 3 && <div className={styles.editorSection}>
                     <h3 className={styles.sectionTitle}>4. Real-time Agent System Instructions (Prompts)</h3>
                     
                     {/* Prompt Box 0: Architect */}
@@ -1305,9 +1379,30 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                         placeholder="Coach Agent System prompt instructions..."
                       />
                     </div>
-                  </div>
+                  </div>}
+
+                  {step === 4 && <div className={styles.editorSection}>
+                    <h3 className={styles.sectionTitle}>Review {isEditing ? 'changes' : 'new course'}</h3>
+                    <div className={styles.reviewCard}>
+                      <p><strong>Course:</strong> {courseName.trim() || 'Missing course name'}</p>
+                      <p><strong>Category:</strong> {formCategory || 'Missing category'} {draftCategory && '(new, saved on Create)'}</p>
+                      <p><strong>Target roles:</strong> {formTargetRoles.join(', ') || 'Missing roles'}</p>
+                      <p><strong>Levels:</strong> {formTargetLevels.join(', ') || 'None selected'}</p>
+                      <p><strong>AI interviewers:</strong> {formInterviewers.map((interviewer) => interviewer.name || 'Unnamed').join(', ') || 'Missing interviewer'}</p>
+                      <p><strong>Goals:</strong> {formFocusAreas.length} focus areas, {formTargetOutcomes.length} outcomes, {formGrowthGoals.length} improvements</p>
+                      <p><strong>Prompts:</strong> {['Architect', 'Interviewer', 'Evaluator', 'Coach'].filter((_, index) => [formArchitectPrompt, formInterviewerPrompt, formEvaluatorPrompt, formCoachPrompt][index].trim()).join(', ') || 'None configured'}</p>
+                    </div>
+                  </div>}
 
                 </div>
+                {!isEditing && <div className={styles.stepFooter}>
+                  <button className={styles.resetButton} disabled={step === 0} onClick={() => setStep((current) => current - 1)}>Back</button>
+                  {step < 4 ? <button className={styles.saveButton} onClick={() => {
+                    if (step === 0 && (!courseName.trim() || !formCategory || formTargetRoles.length === 0)) { showNotification('Enter a course name, category, and at least one target role.', 'error'); return; }
+                    if (step === 1 && formInterviewers.length === 0) { showNotification('Add at least one AI interviewer.', 'error'); return; }
+                    setStep((current) => current + 1);
+                  }}>Next</button> : <button className={styles.saveButton} disabled={isSaving} onClick={handleSaveCourse}>{isSaving ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Course'}</button>}
+                </div>}
               </>
             ) : (
               <div className={styles.emptyState}>
