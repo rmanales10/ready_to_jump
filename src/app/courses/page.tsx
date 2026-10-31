@@ -31,7 +31,6 @@ export default function CoursesPage() {
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [draftCategory, setDraftCategory] = useState('');
-  const [courseName, setCourseName] = useState('');
   const [step, setStep] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [hasDraftChanges, setHasDraftChanges] = useState(false);
@@ -124,7 +123,7 @@ export default function CoursesPage() {
   const filteredCourses = useMemo(() => {
     return courses.filter((course) => {
       const q = searchQuery.toLowerCase();
-      const rolesMatch = course.targetRoles.some(role => role.toLowerCase().includes(q)) || (course.name || '').toLowerCase().includes(q);
+      const rolesMatch = course.targetRoles.some(role => role.toLowerCase().includes(q));
       const categoryMatch = course.category.toLowerCase().includes(q);
       const interviewerMatch = course.interviewers?.some(i => i.name.toLowerCase().includes(q)) || false;
       return rolesMatch || categoryMatch || interviewerMatch;
@@ -141,7 +140,6 @@ export default function CoursesPage() {
 
     // Load general details
     setFormCategory(course.category);
-    setCourseName(course.name || course.targetRoles[0] || '');
     setDraftCategory('');
     setFormTargetRoles(course.targetRoles);
     setFormTargetLevels(course.targetLevels);
@@ -172,8 +170,7 @@ export default function CoursesPage() {
     setIsEditing(false);
 
     // Set clean defaults
-    setFormCategory(categories[0] || '');
-    setCourseName('');
+    setFormCategory(categories.find((category) => !courses.some((course) => course.category.toLowerCase() === category.toLowerCase())) || '');
     setDraftCategory('');
     setFormTargetRoles([]);
     setFormTargetLevels(['Junior', 'Mid']);
@@ -387,7 +384,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
       setNewCategoryName('');
       setShowNewCategoryInput(false);
       setHasDraftChanges(true);
-      showNotification(`Category "${trimmed}" is part of this draft. It will be saved when you create the course.`, 'info');
+      showNotification(`Category "${trimmed}" is part of this draft. It will be saved when you create the setup.`, 'info');
       return;
     }
     try {
@@ -401,7 +398,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
       setFormCategory(trimmed);
       setNewCategoryName('');
       setShowNewCategoryInput(false);
-      showNotification(`Category "${trimmed}" added. Click Create Course to make it available in the app.`, 'success');
+      showNotification(`Category "${trimmed}" added. Save this setup to apply the change.`, 'success');
     } catch (err) {
       console.error('Firestore category save error:', err);
       showNotification('Failed to save category to Firestore.', 'error');
@@ -495,11 +492,6 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
 
   // Handle Save / Submit of course form — writes to Firestore
   const handleSaveCourse = async () => {
-    if (!courseName.trim()) {
-      setStep(0);
-      showNotification('Enter a course name.', 'error');
-      return;
-    }
     if (!formCategory || (!categories.includes(formCategory) && formCategory !== draftCategory)) {
       setStep(0);
       showNotification('Please select an active category before saving.', 'error');
@@ -516,13 +508,12 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
       return;
     }
 
-    if (courses.some((course) => course.id !== selectedCourseId && course.category.toLowerCase() === formCategory.toLowerCase() && (course.name || course.targetRoles[0] || '').trim().toLowerCase() === courseName.trim().toLowerCase())) {
+    if (courses.some((course) => course.id !== selectedCourseId && course.category.trim().toLowerCase() === formCategory.trim().toLowerCase())) {
       setStep(0);
-      showNotification('A course with that name already exists in this category.', 'error');
+      showNotification('This category already has a setup. Select its card to edit it.', 'error');
       return;
     }
     const courseData = {
-      name: courseName.trim(),
       category: formCategory,
       targetRoles: formTargetRoles,
       targetLevels: formTargetLevels,
@@ -554,7 +545,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
             course.id === selectedCourseId ? { ...course, ...courseData } : course
           )
         );
-        showNotification('Course saved to Firestore! Changes are now live on the mobile app.');
+        showNotification('Category setup saved. Changes are now live on the mobile app.');
       } else {
         // Create new in Firestore
         const createdAt = Date.now();
@@ -575,7 +566,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
         setCourses([newCourse, ...courses]);
         setSelectedCourseId(newCourseId);
         setIsEditing(true);
-        showNotification('New course created in Firestore! Mobile app can now use these prompts.');
+        showNotification('Category setup created. The mobile app can now use it.');
       }
       setHasDraftChanges(false);
     } catch (err) {
@@ -710,7 +701,6 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
       const active = courses.find((c) => c.id === selectedCourseId);
       if (active) {
         setFormCategory(active.category);
-        setCourseName(active.name || active.targetRoles[0] || '');
         setFormTargetRoles(active.targetRoles);
         setFormTargetLevels(active.targetLevels);
         const ints = active.interviewers || [];
@@ -788,7 +778,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                 />
               </div>
               <button className={styles.addButton} onClick={handleAddNewCourseClick}>
-                <span>+</span> Add Course
+                <span>+</span> Add Setup
               </button>
             </div>
 
@@ -815,8 +805,8 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                         </div>
                       </div>
 
-                      {/* Display primary role and target roles badges */}
-                      <h3 className={styles.courseName}>{course.name || course.targetRoles[0] || 'Untitled Course'}</h3>
+                      <h3 className={styles.courseName}>{course.category || 'Uncategorized Setup'}</h3>
+                      {courses.some((other) => other.id !== course.id && other.category.trim().toLowerCase() === course.category.trim().toLowerCase()) && <span className={styles.roleTag}>Existing duplicate setup</span>}
                       
                       <div className={styles.rolesContainer}>
                         {course.targetRoles.slice(0, 3).map((role) => (
@@ -862,7 +852,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                 })
               ) : (
                 <div className={styles.courseCard} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-                  No courses found matching search.
+                  No category setups found matching search.
                 </div>
               )}
             </div>
@@ -874,12 +864,12 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
               <>
                 <div className={styles.editorHeader}>
                   <h2 className={styles.editorTitle}>
-                    {isEditing ? 'Edit Course & Prompts' : 'Create New Course & Prompts'}
+                    {isEditing ? 'Edit Category Setup & Prompts' : 'Create Category Setup & Prompts'}
                   </h2>
                   <div className={styles.editorActions}>
                     {isEditing && (
                       <button className={styles.deleteButton} onClick={handleDeleteCourse}>
-                        Delete Course
+                        Delete Setup
                       </button>
                     )}
                     <button className={styles.resetButton} onClick={handleResetForm}>
@@ -890,7 +880,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                 </div>
 
                 <div className={styles.stepNavigation}>
-                  {['Course & roles', 'AI interviewers', 'Goals', 'Prompts', 'Review'].map((label, index) => (
+                  {['Category & roles', 'AI interviewers', 'Goals', 'Prompts', 'Review'].map((label, index) => (
                     <button key={label} type="button" className={`${styles.stepButton} ${step === index ? styles.stepButtonActive : ''}`} onClick={() => setStep(index)}>{index + 1}. {label}</button>
                   ))}
                 </div>
@@ -909,12 +899,8 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
 
                   {/* SECTION 1: General Info */}
                   {step === 0 && <div className={styles.editorSection}>
-                    <h3 className={styles.sectionTitle}>1. Course General Settings</h3>
-                    <div className={styles.formGroup}>
-                      <label className={styles.formLabel} htmlFor="courseName">Course Name</label>
-                      <input id="courseName" className={styles.formInput} value={courseName} onChange={(e) => setCourseName(e.target.value)} placeholder="e.g. Bachelor of Science in Information Technology" />
-                    </div>
-                    {draftCategory && <p className={styles.draftNote}>New category “{draftCategory}” will be saved when you create this course.</p>}
+                    <h3 className={styles.sectionTitle}>1. Category & Target Roles</h3>
+                    {draftCategory && <p className={styles.draftNote}>New category “{draftCategory}” will be saved when you create this setup.</p>}
                     
                     <div className={styles.grid2}>
                       <div className={styles.formGroup}>
@@ -1382,9 +1368,8 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                   </div>}
 
                   {step === 4 && <div className={styles.editorSection}>
-                    <h3 className={styles.sectionTitle}>Review {isEditing ? 'changes' : 'new course'}</h3>
+                    <h3 className={styles.sectionTitle}>Review {isEditing ? 'changes' : 'new setup'}</h3>
                     <div className={styles.reviewCard}>
-                      <p><strong>Course:</strong> {courseName.trim() || 'Missing course name'}</p>
                       <p><strong>Category:</strong> {formCategory || 'Missing category'} {draftCategory && '(new, saved on Create)'}</p>
                       <p><strong>Target roles:</strong> {formTargetRoles.join(', ') || 'Missing roles'}</p>
                       <p><strong>Levels:</strong> {formTargetLevels.join(', ') || 'None selected'}</p>
@@ -1398,10 +1383,11 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                 {!isEditing && <div className={styles.stepFooter}>
                   <button className={styles.resetButton} disabled={step === 0} onClick={() => setStep((current) => current - 1)}>Back</button>
                   {step < 4 ? <button className={styles.saveButton} onClick={() => {
-                    if (step === 0 && (!courseName.trim() || !formCategory || formTargetRoles.length === 0)) { showNotification('Enter a course name, category, and at least one target role.', 'error'); return; }
+                    if (step === 0 && (!formCategory || formTargetRoles.length === 0)) { showNotification('Select a category and add at least one target role.', 'error'); return; }
+                    if (step === 0 && courses.some((course) => course.category.trim().toLowerCase() === formCategory.trim().toLowerCase())) { showNotification('This category already has a setup. Select its card to edit it.', 'error'); return; }
                     if (step === 1 && formInterviewers.length === 0) { showNotification('Add at least one AI interviewer.', 'error'); return; }
                     setStep((current) => current + 1);
-                  }}>Next</button> : <button className={styles.saveButton} disabled={isSaving} onClick={handleSaveCourse}>{isSaving ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Course'}</button>}
+                  }}>Next</button> : <button className={styles.saveButton} disabled={isSaving} onClick={handleSaveCourse}>{isSaving ? 'Saving...' : 'Create Setup'}</button>}
                 </div>}
               </>
             ) : (
@@ -1409,9 +1395,9 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                 <div className={styles.emptyStateIcon}>
                   <CoursesIcon size={64} />
                 </div>
-                <h3 className={styles.emptyStateTitle}>No Course Selected</h3>
+                <h3 className={styles.emptyStateTitle}>No Setup Selected</h3>
                 <p className={styles.emptyStateText}>
-                  Please choose a career course from the left menu or click "+ Add Course" to configure a zero-code AI Prompt system.
+                  Choose a category setup from the left menu or click "+ Add Setup" to configure its roles, interviewers, and prompts.
                 </p>
               </div>
             )}
