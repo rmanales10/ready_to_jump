@@ -778,7 +778,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                 />
               </div>
               <button className={styles.addButton} onClick={handleAddNewCourseClick}>
-                <span>+</span> Add Setup
+                <span>+</span> Add Course
               </button>
             </div>
 
@@ -1397,7 +1397,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                 </div>
                 <h3 className={styles.emptyStateTitle}>No Setup Selected</h3>
                 <p className={styles.emptyStateText}>
-                  Choose a category setup from the left menu or click "+ Add Setup" to configure its roles, interviewers, and prompts.
+                  Choose a category setup from the left menu or click "+ Add Course" to configure its roles, interviewers, and prompts.
                 </p>
               </div>
             )}
