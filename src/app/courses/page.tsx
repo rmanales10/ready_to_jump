@@ -384,7 +384,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
       setNewCategoryName('');
       setShowNewCategoryInput(false);
       setHasDraftChanges(true);
-      showNotification(`Category "${trimmed}" is part of this draft. It will be saved when you create the setup.`, 'info');
+      showNotification(`Category "${trimmed}" is part of this draft. It will be saved when you create the course.`, 'info');
       return;
     }
     try {
@@ -398,7 +398,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
       setFormCategory(trimmed);
       setNewCategoryName('');
       setShowNewCategoryInput(false);
-      showNotification(`Category "${trimmed}" added. Save this setup to apply the change.`, 'success');
+      showNotification(`Category "${trimmed}" added. Save this course to apply the change.`, 'success');
     } catch (err) {
       console.error('Firestore category save error:', err);
       showNotification('Failed to save category to Firestore.', 'error');
@@ -423,9 +423,9 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
     }
     setConfirmModalConfig({
       isOpen: true,
-      title: 'Rename Category',
+      title: 'Rename Course',
       message: `Rename "${oldName}" to "${newName}"? All courses in this category will be updated.`,
-      confirmText: 'Rename',
+      confirmText: 'Rename Course',
       type: 'info',
       onConfirm: async () => {
         try {
@@ -447,7 +447,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
           setFormCategory(newName);
           setRenamingCategory(false);
           setRenamedCategory('');
-          showNotification(`Category renamed to "${newName}" and ${affected.length} course(s) updated.`);
+          showNotification(`Course renamed to "${newName}".`);
         } catch (err) {
           console.error('Category rename failed:', err);
           showNotification('Could not rename the category. No changes were saved.', 'error');
@@ -510,7 +510,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
 
     if (courses.some((course) => course.id !== selectedCourseId && course.category.trim().toLowerCase() === formCategory.trim().toLowerCase())) {
       setStep(0);
-      showNotification('This category already has a setup. Select its card to edit it.', 'error');
+      showNotification('This category already has a course. Select its card to edit it.', 'error');
       return;
     }
     const courseData = {
@@ -545,7 +545,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
             course.id === selectedCourseId ? { ...course, ...courseData } : course
           )
         );
-        showNotification('Category setup saved. Changes are now live on the mobile app.');
+        showNotification('Course saved. Changes are now live on the mobile app.');
       } else {
         // Create new in Firestore
         const createdAt = Date.now();
@@ -566,7 +566,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
         setCourses([newCourse, ...courses]);
         setSelectedCourseId(newCourseId);
         setIsEditing(true);
-        showNotification('Category setup created. The mobile app can now use it.');
+        showNotification('Course created. The mobile app can now use it.');
       }
       setHasDraftChanges(false);
     } catch (err) {
@@ -805,8 +805,8 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                         </div>
                       </div>
 
-                      <h3 className={styles.courseName}>{course.category || 'Uncategorized Setup'}</h3>
-                      {courses.some((other) => other.id !== course.id && other.category.trim().toLowerCase() === course.category.trim().toLowerCase()) && <span className={styles.roleTag}>Existing duplicate setup</span>}
+                      <h3 className={styles.courseName}>{course.category || 'Uncategorized Course'}</h3>
+                      {courses.some((other) => other.id !== course.id && other.category.trim().toLowerCase() === course.category.trim().toLowerCase()) && <span className={styles.roleTag}>Existing duplicate course</span>}
                       
                       <div className={styles.rolesContainer}>
                         {course.targetRoles.slice(0, 3).map((role) => (
@@ -852,7 +852,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                 })
               ) : (
                 <div className={styles.courseCard} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-                  No category setups found matching search.
+                  No courses found matching search.
                 </div>
               )}
             </div>
@@ -864,12 +864,12 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
               <>
                 <div className={styles.editorHeader}>
                   <h2 className={styles.editorTitle}>
-                    {isEditing ? 'Edit Category Setup & Prompts' : 'Create Category Setup & Prompts'}
+                    {isEditing ? 'Edit Course & Prompts' : 'Create Course & Prompts'}
                   </h2>
                   <div className={styles.editorActions}>
                     {isEditing && (
                       <button className={styles.deleteButton} onClick={handleDeleteCourse}>
-                        Delete Setup
+                        Delete Course
                       </button>
                     )}
                     <button className={styles.resetButton} onClick={handleResetForm}>
@@ -900,7 +900,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                   {/* SECTION 1: General Info */}
                   {step === 0 && <div className={styles.editorSection}>
                     <h3 className={styles.sectionTitle}>1. Category & Target Roles</h3>
-                    {draftCategory && <p className={styles.draftNote}>New category “{draftCategory}” will be saved when you create this setup.</p>}
+                    {draftCategory && <p className={styles.draftNote}>New category “{draftCategory}” will be saved when you create this course.</p>}
                     
                     <div className={styles.grid2}>
                       <div className={styles.formGroup}>
@@ -938,7 +938,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                                 ))}
                               </select>
                               <button className={styles.inlineAddBtn} onClick={() => setShowNewCategoryInput(true)}>+ New</button>
-                              {formCategory && <button className={styles.inlineAddBtn} onClick={() => { setRenamedCategory(formCategory); setRenamingCategory(true); }}>Rename</button>}
+                              {formCategory && <button className={styles.inlineAddBtn} onClick={() => { setRenamedCategory(formCategory); setRenamingCategory(true); }}>Rename Course</button>}
                               {formCategory && (
                                 <button className={styles.inlineDeleteBtn} onClick={handleDeleteCategory}>Delete</button>
                               )}
@@ -948,7 +948,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                         {renamingCategory && (
                           <div className={styles.categorySelectContainer}>
                             <input className={styles.formInput} value={renamedCategory} onChange={(e) => setRenamedCategory(e.target.value)} aria-label="New category name" />
-                            <button className={styles.inlineAddBtn} onClick={handleRenameCategory}>Save Name</button>
+                            <button className={styles.inlineAddBtn} onClick={handleRenameCategory}>Rename</button>
                             <button className={styles.resetButton} onClick={() => setRenamingCategory(false)}>Cancel</button>
                           </div>
                         )}
@@ -1368,7 +1368,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                   </div>}
 
                   {step === 4 && <div className={styles.editorSection}>
-                    <h3 className={styles.sectionTitle}>Review {isEditing ? 'changes' : 'new setup'}</h3>
+                    <h3 className={styles.sectionTitle}>Review {isEditing ? 'changes' : 'new course'}</h3>
                     <div className={styles.reviewCard}>
                       <p><strong>Category:</strong> {formCategory || 'Missing category'} {draftCategory && '(new, saved on Create)'}</p>
                       <p><strong>Target roles:</strong> {formTargetRoles.join(', ') || 'Missing roles'}</p>
@@ -1384,10 +1384,10 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                   <button className={styles.resetButton} disabled={step === 0} onClick={() => setStep((current) => current - 1)}>Back</button>
                   {step < 4 ? <button className={styles.saveButton} onClick={() => {
                     if (step === 0 && (!formCategory || formTargetRoles.length === 0)) { showNotification('Select a category and add at least one target role.', 'error'); return; }
-                    if (step === 0 && courses.some((course) => course.category.trim().toLowerCase() === formCategory.trim().toLowerCase())) { showNotification('This category already has a setup. Select its card to edit it.', 'error'); return; }
+                    if (step === 0 && courses.some((course) => course.category.trim().toLowerCase() === formCategory.trim().toLowerCase())) { showNotification('This category already has a course. Select its card to edit it.', 'error'); return; }
                     if (step === 1 && formInterviewers.length === 0) { showNotification('Add at least one AI interviewer.', 'error'); return; }
                     setStep((current) => current + 1);
-                  }}>Next</button> : <button className={styles.saveButton} disabled={isSaving} onClick={handleSaveCourse}>{isSaving ? 'Saving...' : 'Create Setup'}</button>}
+                  }}>Next</button> : <button className={styles.saveButton} disabled={isSaving} onClick={handleSaveCourse}>{isSaving ? 'Saving...' : 'Create Course'}</button>}
                 </div>}
               </>
             ) : (
@@ -1395,9 +1395,9 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                 <div className={styles.emptyStateIcon}>
                   <CoursesIcon size={64} />
                 </div>
-                <h3 className={styles.emptyStateTitle}>No Setup Selected</h3>
+                <h3 className={styles.emptyStateTitle}>No Course Selected</h3>
                 <p className={styles.emptyStateText}>
-                  Choose a category setup from the left menu or click "+ Add Course" to configure its roles, interviewers, and prompts.
+                  Choose a course from the left menu or click "+ Add Course" to configure its roles, interviewers, and prompts.
                 </p>
               </div>
             )}
