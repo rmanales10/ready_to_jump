@@ -500,6 +500,10 @@
   gap: 8px;
 }
 
+.categoryFormGroup {
+  grid-column: 1 / -1;
+}
+
 .formLabel {
   font-size: 13px;
   font-weight: 600;
@@ -537,6 +541,7 @@
 .categorySelectContainer .formSelect {
   flex: 1;
   min-width: 0;
+  min-height: 48px;
   text-overflow: ellipsis;
 }
 

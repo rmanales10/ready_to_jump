@@ -903,7 +903,7 @@ Deliver encouraging suggestions and actionable steps for future practice.`);
                     {draftCategory && <p className={styles.draftNote}>New category “{draftCategory}” will be saved when you create this course.</p>}
                     
                     <div className={styles.grid2}>
-                      <div className={styles.formGroup}>
+                      <div className={`${styles.formGroup} ${styles.categoryFormGroup}`}>
                         <label className={styles.formLabel}>Category</label>
                         <div className={styles.categorySelectContainer}>
                           {showNewCategoryInput ? (
